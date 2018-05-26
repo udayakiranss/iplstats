@@ -40,6 +40,7 @@ public class SeasonInterfaceImpl implements SeasonInterface {
 
 //            System.out.println("Season Size:"+ seasonList.size());
 //            return seasonList;
+
             seasonPage.forEach(season -> {
                 seasonDTOList.add(mapper.domainToDTO(season));
             } );
