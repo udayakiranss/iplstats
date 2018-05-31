@@ -1,0 +1,31 @@
+security:
+  oauth2:
+    client:
+      clientId: 0oaf7390yzPJB6wUc0h7
+      clientSecret: x9eXRiWXDExb7zz_jIo3Z7FSv_dDrv7TqgbaWiJo
+    resource:
+      tokenInfoUri: https://dev-365880.oktapreview.com/oauth2/default/v1/introspect
+
+server:
+  port: 8083
+
+spring:
+  h2:
+  console:
+    enabled: true
+  jpa:
+    properties:
+      hibernate:
+        generate_statistics: true
+        format_sql: true
+    show-sql: true
+
+logging:
+  level:
+    org:
+      hibernate:
+        stat: debug
+        type: trace
+      springframework:
+        security: DEBUG
+

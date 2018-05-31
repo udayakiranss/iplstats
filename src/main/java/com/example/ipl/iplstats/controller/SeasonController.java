@@ -6,6 +6,7 @@ import com.example.ipl.iplstats.exception.IPLStatException;
 import com.example.ipl.iplstats.service.SeasonInterface;
 import com.example.ipl.iplstats.util.RestResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -41,6 +42,7 @@ public class SeasonController {
     }
 
     @RequestMapping(value = "/season", method = RequestMethod.GET)
+    @PreAuthorize("#oauth2.hasScope('custom_mod')")
     public RestResponse<Map<String, List<SeasonDTO>>> getSeasons(){
 
         RestResponse<Map<String, List<SeasonDTO>>> response = new RestResponse<>();
