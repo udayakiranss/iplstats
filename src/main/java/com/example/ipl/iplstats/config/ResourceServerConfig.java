@@ -8,8 +8,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 
-
-
+@Configuration
+@EnableResourceServer
 public class ResourceServerConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private AuthenticationManager authenticationManager;

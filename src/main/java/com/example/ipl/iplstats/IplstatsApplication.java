@@ -2,14 +2,9 @@ package com.example.ipl.iplstats;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
-import org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration;
-import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
-import org.springframework.security.oauth2.provider.expression.OAuth2MethodSecurityExpressionHandler;
 
 @SpringBootApplication
-@EnableResourceServer
+//@EnableResourceServer
 public class IplstatsApplication {
 
 	public static void main(String[] args) {
@@ -19,13 +14,18 @@ public class IplstatsApplication {
 	/**
 	 * Allows for @PreAuthorize annotation processing.
 	 */
-	@EnableGlobalMethodSecurity(prePostEnabled = true)
-	protected static class GlobalSecurityConfiguration extends GlobalMethodSecurityConfiguration {
-		@Override
-		protected MethodSecurityExpressionHandler createExpressionHandler() {
-			return new OAuth2MethodSecurityExpressionHandler();
-		}
-	}
+//	@EnableGlobalMethodSecurity(prePostEnabled = true)
+//	protected static class GlobalSecurityConfiguration extends GlobalMethodSecurityConfiguration {
+//		@Override
+//		protected MethodSecurityExpressionHandler createExpressionHandler() {
+//			return new OAuth2MethodSecurityExpressionHandler();
+//		}
+//	}
+//
+//	@Bean
+//	public OAuthProperties oAuthProperties() {
+//		return new OAuthProperties();
+//	}
 
 //	@RestController
 //	@PreAuthorize("#oauth2.hasScope('custom_mod')")

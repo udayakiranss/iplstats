@@ -1,11 +1,9 @@
 package com.example.ipl.iplstats.entity;
 
 import lombok.Data;
-import lombok.Generated;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
+import java.util.Set;
 
 @Data
 @Entity
@@ -15,6 +13,7 @@ public class Season {
     private Long id;
     private String year;
     private String description;
-
+    @OneToMany(cascade = CascadeType.ALL,orphanRemoval = true,fetch = FetchType.LAZY, mappedBy = "season")
+    private Set<SeasonTeam> teams;
 
 }
