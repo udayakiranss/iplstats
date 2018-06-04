@@ -1,78 +1,56 @@
 package com.example.ipl.iplstats.data;
 
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-@Data
+@Getter
+@Setter
 @ToString
-@EqualsAndHashCode
+@EqualsAndHashCode(of ="year")
 @NoArgsConstructor
+@AllArgsConstructor
 public class SeasonDTO {
 
     private Long id;
-    private String year;
+    private int year;
     private String description;
     private Set<TeamDTO> teams;
 
     private Set<MatchSummaryDTO> matches;
 
+    public SeasonDTO(String year){
+        this.year = new Integer(year).intValue();
+    }
 
-//    public Long getId() {
-//        return id;
-//    }
-//
-//    public void setId(Long id) {
-//        this.id = id;
-//    }
-//
-//    public String getYear() {
-//        return year;
-//    }
-//
-//    public void setYear(String year) {
-//        this.year = year;
-//    }
-//
-//    public String getDescription() {
-//        return description;
-//    }
-//
-//    public void setDescription(String description) {
-//        this.description = description;
-//    }
+    public void addTeamDTO(TeamDTO team){
+        if(teams==null){
+            teams = new HashSet<TeamDTO>();
+        }
+        teams.add(team);
 
-//    @Override
-//    public boolean equals(Object o) {
-//        if (this == o) return true;
-//        if (o == null || getClass() != o.getClass()) return false;
-//        SeasonDTO seasonDTO = (SeasonDTO) o;
-//        return getYear() == seasonDTO.getYear() &&
-//                Objects.equals(getId(), seasonDTO.getId()) &&
-//                Objects.equals(getDescription(), seasonDTO.getDescription());
-//    }
-//
-//    @Override
-//    public int hashCode() {
-//
-//        return Objects.hash(getId(), getYear(), getDescription());
-//    }
-//
-//    @Override
-//    public String toString() {
-//        return "SeasonDTO{" +
-//                "id=" + id +
-//                ", year=" + year +
-//                ", description='" + description + '\'' +
-//                ", teams=" + teams +
-//                '}';
-//    }
+    }
+
+    public void addMatchDTO(MatchSummaryDTO summaryDTO){
+        if(matches==null){
+            matches = new HashSet<MatchSummaryDTO>();
+        }
+        matches.add(summaryDTO);
+
+    }
+
+    @Override
+    public String toString() {
+        return "\nSeasonDTO[" +
+                "year=" + year +
+                ", \nteams=" + teams +
+                ", \nmatches=" + matches +
+                '[';
+    }
 }

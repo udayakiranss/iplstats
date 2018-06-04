@@ -1,7 +1,9 @@
 package com.example.ipl.iplstats;
 
+import com.example.ipl.iplstats.utility.SeasonLoader;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
 //@EnableResourceServer
@@ -11,6 +13,11 @@ public class IplstatsApplication {
 		SpringApplication.run(IplstatsApplication.class, args);
 	}
 
+
+//	@Bean
+//	public SeasonLoader loadSeason(){
+//			return new SeasonLoader();
+//	}
 	/**
 	 * Allows for @PreAuthorize annotation processing.
 	 */
@@ -26,6 +33,8 @@ public class IplstatsApplication {
 //	public OAuthProperties oAuthProperties() {
 //		return new OAuthProperties();
 //	}
+
+
 
 //	@RestController
 //	@PreAuthorize("#oauth2.hasScope('custom_mod')")

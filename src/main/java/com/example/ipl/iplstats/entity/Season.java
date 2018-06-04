@@ -9,11 +9,16 @@ import java.util.Set;
 @Entity
 public class Season {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private String year;
     private String description;
-    @OneToMany(cascade = CascadeType.ALL,orphanRemoval = true,fetch = FetchType.LAZY, mappedBy = "season")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "season")
+//    @OneToMany(cascade = CascadeType.ALL)
+//    @JoinColumn(name = "season_id", referencedColumnName = "season_id")
     private Set<SeasonTeam> teams;
-
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "season")
+    private Set<MatchSummary> matches;
 }
+
+

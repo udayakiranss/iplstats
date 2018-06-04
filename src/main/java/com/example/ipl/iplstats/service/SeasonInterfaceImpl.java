@@ -2,7 +2,9 @@ package com.example.ipl.iplstats.service;
 
 import com.example.ipl.iplstats.dao.SeasonDAO;
 import com.example.ipl.iplstats.data.SeasonDTO;
+import com.example.ipl.iplstats.data.TeamDTO;
 import com.example.ipl.iplstats.entity.Season;
+import com.example.ipl.iplstats.entity.SeasonTeam;
 import com.example.ipl.iplstats.exception.IPLStatException;
 import com.example.ipl.iplstats.mapper.SeasonMapper;
 import org.mapstruct.factory.Mappers;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Component
 public class SeasonInterfaceImpl implements SeasonInterface {
@@ -22,13 +25,14 @@ public class SeasonInterfaceImpl implements SeasonInterface {
     private SeasonDAO seasonRepo;
 
     @Override
-    public void addSeason(SeasonDTO season) throws IPLStatException {
+    public SeasonDTO addSeason(SeasonDTO season) throws IPLStatException {
         System.out.println("Season Details:"+season);
         if(season!=null){
             Season seasonEntity = mapper.dtoToDomain(season);
             seasonRepo.save(seasonEntity);
-            seasonList.add(season);
+            return mapper.domainToDTO(seasonEntity);
         }
+        return null;
     }
 
 
@@ -42,7 +46,15 @@ public class SeasonInterfaceImpl implements SeasonInterface {
 //            return seasonList;
 
             seasonPage.forEach(season -> {
-                seasonDTOList.add(mapper.domainToDTO(season));
+                Set<SeasonTeam> teams = season.getTeams();
+                SeasonDTO seasonDTO = mapper.domainToDTO(season);
+
+                teams.forEach(team-> {
+                    TeamDTO teamDTO = mapper.seasonTeamToTeamDTO(team);
+                    seasonDTO.addTeamDTO(teamDTO);
+                });
+
+                seasonDTOList.add(seasonDTO);
             } );
         }
         return  seasonDTOList;

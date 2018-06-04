@@ -28,7 +28,10 @@ spring:
       hibernate:
         generate_statistics: true
         format_sql: true
+        ddl-auto: create-drop
     show-sql: true
+
+
 
 logging:
   level:

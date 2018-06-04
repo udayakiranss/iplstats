@@ -1,15 +1,13 @@
 package com.example.ipl.iplstats.data;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 
 import java.util.Set;
 
-@Data
-@ToString
-@EqualsAndHashCode
+@Getter
+@Setter
+@ToString(of = "name")
+@EqualsAndHashCode(of = "name")
 @NoArgsConstructor
 public class TeamDTO {
 
@@ -21,6 +19,13 @@ public class TeamDTO {
     private int winCount;
     private int lostCount;
     private int points;
+    private SeasonDTO seasonDTO;
 
     private Set<PlayerDTO> players;
+
+    public TeamDTO(String name){
+        this.name = name;
+    }
+
+
 }

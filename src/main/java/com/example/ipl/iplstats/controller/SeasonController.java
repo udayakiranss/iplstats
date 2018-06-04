@@ -5,20 +5,21 @@ import com.example.ipl.iplstats.data.SeasonDTO;
 import com.example.ipl.iplstats.exception.IPLStatException;
 import com.example.ipl.iplstats.service.SeasonInterface;
 import com.example.ipl.iplstats.util.RestResponse;
-import lombok.extern.java.Log;
+import com.example.ipl.iplstats.utility.SeasonLoader;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.security.Principal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 
 @RestController
 @Slf4j
@@ -26,6 +27,8 @@ import java.util.Map;
 public class SeasonController {
     @Autowired
     private SeasonInterface seasonService;
+    @Autowired
+    private SeasonLoader loader;
 
     @RequestMapping(value = "/season", method = RequestMethod.POST)
     public RestResponse<Map<String, String>> addSeason(@RequestBody SeasonDTO season){
@@ -72,7 +75,7 @@ public class SeasonController {
     }
 
     @RequestMapping(value = "/season", method = RequestMethod.GET)
-    @PreAuthorize("#oauth2.hasScope('custom_mod')")
+//    @PreAuthorize("#oauth2.hasScope('custom_mod')")
     public RestResponse<Map<String, List<SeasonDTO>>> getSeasons(){
 
         RestResponse<Map<String, List<SeasonDTO>>> response = new RestResponse<>();
@@ -96,12 +99,25 @@ public class SeasonController {
         SeasonDTO season = new SeasonDTO();
         season.setDescription("Test");
         season.setId(new Long(1));
-        season.setYear("2001");
+        season.setYear(2001);
         return season;
     }
 
     @GetMapping("/principal")
     public Principal user(Principal principal) {
         return principal;
+    }
+
+    @GetMapping("/loadData")
+    public boolean loadData(){
+        boolean isLoadSuccessful = false;
+        File matchFile = new File(SeasonLoader.class.getClassLoader().getResource("matches.csv").getFile());
+        try {
+            loader.parseMatchesFile(matchFile);
+            isLoadSuccessful = true;
+        } catch (IPLStatException e) {
+            e.printStackTrace();
+        }
+        return isLoadSuccessful;
     }
 }
