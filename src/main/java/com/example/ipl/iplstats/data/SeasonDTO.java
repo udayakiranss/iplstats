@@ -45,6 +45,16 @@ public class SeasonDTO {
 
     }
 
+    public static SeasonDTO copy(SeasonDTO seasonDTO){
+
+        SeasonDTO newSeasonDTO = new SeasonDTO();
+
+        newSeasonDTO.setYear(seasonDTO.getYear());
+        newSeasonDTO.setDescription(seasonDTO.getDescription());
+        newSeasonDTO.setId(seasonDTO.getId());
+        return  newSeasonDTO;
+    }
+
     @Override
     public String toString() {
         return "\nSeasonDTO[" +

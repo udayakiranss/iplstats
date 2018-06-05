@@ -42,9 +42,10 @@ public class sampleApp implements CommandLineRunner {
 
         SeasonTeam team = new SeasonTeam();
         team.setName("IIII");
+        team.setSeason(season);
         Set<SeasonTeam> teams = new HashSet<SeasonTeam>();
         teams.add(team);
-        season.setTeams(teams);
+//        season.setTeams(teams);
 
         seasonDAO.save(season);
 
@@ -54,9 +55,10 @@ public class sampleApp implements CommandLineRunner {
 
         SeasonTeam team2 = new SeasonTeam();
         team2.setName("JJJJJJ");
+        team2.setSeason(season2);
         Set<SeasonTeam> teams2 = new HashSet<SeasonTeam>();
         teams2.add(team2);
-        season2.setTeams(teams2);
+//        season2.setTeams(teams2);
 
         seasonDAO.save(season2);
 

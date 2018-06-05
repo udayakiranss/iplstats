@@ -41,7 +41,7 @@ public class SeasonLoader {
 
     }
 
-    public void parseMatchesFile(File csvFile)throws  IPLStatException{
+    public List<SeasonDTO> parseMatchesFile(File csvFile)throws  IPLStatException{
         try {
 
 //            CsvParser
@@ -67,16 +67,17 @@ public class SeasonLoader {
             loadSeasons();
 
 
-
-            for (Iterator<SeasonDTO> iterator = seasons.iterator(); iterator.hasNext(); ) {
-                SeasonDTO next =  iterator.next();
-                seasonInterface.addSeason(next);
-            }
+//
+//            for (Iterator<SeasonDTO> iterator = seasons.iterator(); iterator.hasNext(); ) {
+//                SeasonDTO next =  iterator.next();
+//                seasonInterface.addSeason(next);
+//            }
 
 
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return  seasons;
     }
 
     private void loadSeasons()throws IPLStatException{
@@ -107,18 +108,19 @@ public class SeasonLoader {
         }else{
             seasons.add(seasonDTO);
         }
-        seasonDTO.addTeamDTO(getTeam(match.getTeam1()));
-        seasonDTO.addTeamDTO(getTeam(match.getTeam2()));
+        seasonDTO.addTeamDTO(getTeam(seasonDTO,match.getTeam1()));
+        seasonDTO.addTeamDTO(getTeam(seasonDTO,match.getTeam2()));
 
-        seasonDTO.addMatchDTO(getMatchSummary(match));
+        seasonDTO.addMatchDTO(getMatchSummary(seasonDTO,match));
 
 //        return seasonInterface.addSeason(seasonDTO);
 
     }
 
 
-    private TeamDTO getTeam(String name){
+    private TeamDTO getTeam(SeasonDTO seasonDTO, String name){
         TeamDTO team = new TeamDTO(name);
+//        team.setSeasonDTO(seasonDTO);
         int teamIndex = teams.indexOf(team);
 
         if(teamIndex!=-1){
@@ -126,20 +128,22 @@ public class SeasonLoader {
         }else{
             teams.add(team);
         }
+
         return team;
 
     }
 
-    private MatchSummaryDTO getMatchSummary(MatchesDTO match){
+    private MatchSummaryDTO getMatchSummary(SeasonDTO seasonDTO,MatchesDTO match){
 
-        TeamDTO teamA = getTeam(match.getTeam1());
-        TeamDTO teamB = getTeam(match.getTeam2());
-        TeamDTO tossWinner = getTeam(match.getToss_winner());
-        TeamDTO winner = getTeam(match.getWinner());
+        TeamDTO teamA = getTeam(seasonDTO,match.getTeam1());
+        TeamDTO teamB = getTeam(seasonDTO,match.getTeam2());
+        TeamDTO tossWinner = getTeam(seasonDTO,match.getToss_winner());
+        TeamDTO winner = getTeam(seasonDTO,match.getWinner());
 
         MatchSummaryDTO matSummary = new MatchSummaryDTO(match.getCity(),match.getVenue(),teamA,teamB,tossWinner,
                 match.getToss_decision(),winner,match.getWin_by_runs(),match.getWin_by_wickets());
         matSummary.setDate(match.getDate());
+//        matSummary.setSeasonDTO(seasonDTO);
         int summaryIndex = summaryDTOS.indexOf(matSummary);
 
         if(summaryIndex!=-1){

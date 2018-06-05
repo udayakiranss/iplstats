@@ -24,6 +24,7 @@ public class MatchSummaryDTO {
     private int winByRuns;
     private int winByWickets;
     private PlayerDTO playerOfMatch;
+    private SeasonDTO seasonDTO;
 
     public MatchSummaryDTO(String city, String venue, TeamDTO teamA, TeamDTO teamB, TeamDTO tossWinner, String tossDecision,
                            TeamDTO winner, String winByRuns, String winByWickets){
@@ -36,6 +37,16 @@ public class MatchSummaryDTO {
         this.winner = winner;
         this.winByRuns = new Integer(winByRuns).intValue();
         this.winByWickets = new Integer(winByWickets).intValue();;
+    }
+
+    public static MatchSummaryDTO copy(MatchSummaryDTO matchSummaryDTO){
+        MatchSummaryDTO matchSummaryDTO1 = new MatchSummaryDTO();
+
+        matchSummaryDTO1.setMatchID(matchSummaryDTO.getMatchID());
+        matchSummaryDTO1.setTeamA(matchSummaryDTO.getTeamA());
+        matchSummaryDTO1.setTeamB(matchSummaryDTO.getTeamB());
+
+        return  matchSummaryDTO1;
     }
 
     @Override
