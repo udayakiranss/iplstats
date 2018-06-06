@@ -12,6 +12,8 @@ import com.example.ipl.iplstats.entity.SeasonTeam;
 import com.example.ipl.iplstats.exception.IPLStatException;
 import com.example.ipl.iplstats.mapper.SeasonMapper;
 import com.example.ipl.iplstats.utility.SeasonLoader;
+import lombok.extern.java.Log;
+import lombok.extern.slf4j.Slf4j;
 import org.mapstruct.factory.Mappers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -24,6 +26,7 @@ import java.util.List;
 import java.util.Set;
 
 @Component
+@Slf4j
 public class SeasonInterfaceImpl implements SeasonInterface {
 
     List<SeasonDTO> seasonList = new ArrayList<SeasonDTO>();
@@ -41,7 +44,7 @@ public class SeasonInterfaceImpl implements SeasonInterface {
     @Override
     @Transactional
     public SeasonDTO addSeason(SeasonDTO season) throws IPLStatException {
-        System.out.println("Season Details:"+season);
+        System.out.println("Season Details:" + season);
         if(season!=null){
             Season seasonEntity = mapper.dtoToDomain(season);
             seasonRepo.save(seasonEntity);
@@ -57,13 +60,12 @@ public class SeasonInterfaceImpl implements SeasonInterface {
         final List<SeasonDTO> seasonDTOList = new ArrayList<SeasonDTO>();
         if(seasonPage!=null){
 
-//            System.out.println("Season Size:"+ seasonList.size());
-//            return seasonList;
-
             seasonPage.forEach(season -> {
                 SeasonDTO seasonDTO = mapper.domainToDTO(season);
                 Set<SeasonTeam> teams = teamDAO.findBySeason(season);
+                log.debug("No of teams in season "+ season.getYear() + " is "+teams.size());
                 Set<MatchSummary> matches = matchDAO.findBySeason(season);
+                log.debug("No of matches in season "+ season.getYear() + " is "+matches.size());
                 teams.forEach(team-> {
                     TeamDTO teamDTO = mapper.seasonTeamToTeamDTO(team);
                     seasonDTO.addTeamDTO(teamDTO);

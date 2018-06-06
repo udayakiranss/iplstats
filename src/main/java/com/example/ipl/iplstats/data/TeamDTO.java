@@ -7,7 +7,7 @@ import java.util.Set;
 @Getter
 @Setter
 @ToString(of = "name")
-@EqualsAndHashCode(of = "name")
+@EqualsAndHashCode(of = "teamID,name,seasonDTO")
 @NoArgsConstructor
 public class TeamDTO {
 

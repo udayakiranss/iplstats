@@ -1,6 +1,5 @@
 package com.example.ipl.iplstats.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -11,7 +10,8 @@ import java.util.Date;
 public class MatchSummary {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private int matchID;
+    private Long id;
+    private Long matchID;
     private Date date;
     private String city;
     private String venue;
@@ -27,5 +27,6 @@ public class MatchSummary {
     @ManyToOne
     @JoinColumn(name="season_id")
     private Season season;
+
 
 }

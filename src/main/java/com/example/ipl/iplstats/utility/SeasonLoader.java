@@ -140,7 +140,7 @@ public class SeasonLoader {
         TeamDTO tossWinner = getTeam(seasonDTO,match.getToss_winner());
         TeamDTO winner = getTeam(seasonDTO,match.getWinner());
 
-        MatchSummaryDTO matSummary = new MatchSummaryDTO(match.getCity(),match.getVenue(),teamA,teamB,tossWinner,
+        MatchSummaryDTO matSummary = new MatchSummaryDTO(match.getId(),match.getCity(),match.getVenue(),teamA,teamB,tossWinner,
                 match.getToss_decision(),winner,match.getWin_by_runs(),match.getWin_by_wickets());
         matSummary.setDate(match.getDate());
 //        matSummary.setSeasonDTO(seasonDTO);

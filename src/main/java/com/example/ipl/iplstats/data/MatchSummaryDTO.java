@@ -6,13 +6,14 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 @EqualsAndHashCode
 @NoArgsConstructor
 public class MatchSummaryDTO {
-
-    private int matchID;
+    private Long id;
+    private Long matchID;
     private Date date;
     private String city;
     private String venue;
@@ -26,7 +27,9 @@ public class MatchSummaryDTO {
     private PlayerDTO playerOfMatch;
     private SeasonDTO seasonDTO;
 
-    public MatchSummaryDTO(String city, String venue, TeamDTO teamA, TeamDTO teamB, TeamDTO tossWinner, String tossDecision,
+    private List<MatchDetailsDTO> matchDetails;
+
+    public MatchSummaryDTO(String id,String city, String venue, TeamDTO teamA, TeamDTO teamB, TeamDTO tossWinner, String tossDecision,
                            TeamDTO winner, String winByRuns, String winByWickets){
         this.city= city;
         this.venue = venue;
@@ -37,7 +40,10 @@ public class MatchSummaryDTO {
         this.winner = winner;
         this.winByRuns = new Integer(winByRuns).intValue();
         this.winByWickets = new Integer(winByWickets).intValue();;
+        this.matchID = new Long(id).longValue();
     }
+
+
 
     public static MatchSummaryDTO copy(MatchSummaryDTO matchSummaryDTO){
         MatchSummaryDTO matchSummaryDTO1 = new MatchSummaryDTO();
