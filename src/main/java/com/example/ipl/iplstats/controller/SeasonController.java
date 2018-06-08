@@ -112,8 +112,11 @@ public class SeasonController {
     public boolean loadData(){
         boolean isLoadSuccessful = false;
         File matchFile = new File(SeasonLoader.class.getClassLoader().getResource("matches.csv").getFile());
+        File deliveriesFile = new File(SeasonLoader.class.getClassLoader().getResource("deliveries-sample.csv").getFile());
+
         try {
             seasonService.loadMatches(matchFile);
+            seasonService.loadDeliveryDetails(deliveriesFile);
             isLoadSuccessful = true;
         } catch (IPLStatException e) {
             e.printStackTrace();

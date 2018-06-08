@@ -1,6 +1,7 @@
 package com.example.ipl.iplstats.service;
 
 import com.example.ipl.iplstats.dao.MatchDAO;
+import com.example.ipl.iplstats.dao.MatchDetailsDAO;
 import com.example.ipl.iplstats.dao.SeasonDAO;
 import com.example.ipl.iplstats.dao.TeamDAO;
 import com.example.ipl.iplstats.data.MatchSummaryDTO;
@@ -36,6 +37,8 @@ public class SeasonInterfaceImpl implements SeasonInterface {
     private TeamDAO teamDAO;
     @Autowired
     private MatchDAO matchDAO;
+    @Autowired
+    private MatchDetailsDAO matchDetailsDAO;
     @Autowired
     private SeasonLoader loader;
     @Autowired
@@ -101,17 +104,13 @@ public class SeasonInterfaceImpl implements SeasonInterface {
 
     }
 
-
+    @Transactional
     public void loadDeliveryDetails(File file) throws IPLStatException{
 
         dataLoader.parseDeliveriesFile(file);
 
-        List<MatchDetails> detailsList = dataLoader.getDetailsList();
-
-        detailsList.forEach(matchDetails -> {
-            MatchSummary summary = matchDAO.getOne(matchDetails.getMatchID());
-
-        });
+        Iterable<MatchDetails> detailsList = dataLoader.getDetailsList();
+        matchDetailsDAO.save(detailsList);
 
     }
 

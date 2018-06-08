@@ -1,5 +1,6 @@
 package com.example.ipl.iplstats.loader;
 
+import com.example.ipl.iplstats.dao.MatchDAO;
 import com.example.ipl.iplstats.data.DeliveryDetailsDTO;
 import com.example.ipl.iplstats.data.MatchDetailsDTO;
 import com.example.ipl.iplstats.data.MatchesDTO;
@@ -9,11 +10,13 @@ import com.example.ipl.iplstats.entity.Season;
 import com.example.ipl.iplstats.entity.Team;
 import com.example.ipl.iplstats.exception.IPLStatException;
 import com.example.ipl.iplstats.mapper.DeliveryMapper;
+import com.example.ipl.iplstats.service.SeasonInterface;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.mapstruct.factory.Mappers;
 import org.simpleflatmapper.csv.CsvMapperFactory;
 import org.simpleflatmapper.csv.CsvParser;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -35,6 +38,8 @@ public class IPLDataLoader {
     private Set<DeliveryDetailsDTO> deliveryInfoList=new HashSet<DeliveryDetailsDTO>();
     @Getter
     private List<MatchDetails> detailsList = new ArrayList<MatchDetails>();
+    @Autowired
+    private MatchDAO matchDAO;
 
 
     public void parseMatches(File matchesFile)throws  IPLStatException{
@@ -66,9 +71,16 @@ public class IPLDataLoader {
 
             log.debug("matches = " + deliveryInfoList.size());
             DeliveryMapper mapper = Mappers.getMapper(DeliveryMapper.class);
+
             deliveryInfoList.forEach(deliveryDetails-> {
-                MatchDetails matchDetails =  mapper.deliveriesToMatchDetails(deliveryDetails);
-                detailsList.add(matchDetails);
+
+                MatchSummary summary = matchDAO.getOne(new Long(deliveryDetails.getMatch_id()));
+                if(summary!=null){
+                    MatchDetails matchDetails =  mapper.deliveriesToMatchDetails(deliveryDetails);
+                    matchDetails.setMatchSummary(summary);
+                    detailsList.add(matchDetails);
+                }
+
             });
 
 
