@@ -6,9 +6,9 @@ import lombok.EqualsAndHashCode;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
-@Data
-@Entity
-@EqualsAndHashCode(of = "teamID,name,season")
+//@Data
+//@Entity
+//@EqualsAndHashCode(of = "teamID,name,season")
 public class SeasonTeam {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

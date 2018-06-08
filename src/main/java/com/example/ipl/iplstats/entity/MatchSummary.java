@@ -24,9 +24,24 @@ public class MatchSummary {
     private int winByRuns;
     private int winByWickets;
 
-    @ManyToOne
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name="season_id")
     private Season season;
 
+
+    public MatchSummary(String id, String city, String venue, String teamA, String teamB, String tossWinner,
+                           String tossDecision,
+                           String winner, String winByRuns, String winByWickets){
+        this.city= city;
+        this.venue = venue;
+        this.teamA = teamA;
+        this.teamB = teamB;
+        this.tossWinner = tossWinner;
+        this.tossDecision = tossDecision;
+        this.winner = winner;
+        this.winByRuns = new Integer(winByRuns).intValue();
+        this.winByWickets = new Integer(winByWickets).intValue();;
+        this.matchID = new Long(id).longValue();
+    }
 
 }

@@ -13,7 +13,9 @@ public interface SeasonInterface {
 
     List<SeasonDTO> getSeasons() throws IPLStatException;
 
-    void loadSeasons(File file) throws  IPLStatException;
+//    void loadSeasons(File file) throws  IPLStatException;
+
+    void loadMatches(File file) throws  IPLStatException;
 
 
 }

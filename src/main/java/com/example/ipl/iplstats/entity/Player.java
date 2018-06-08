@@ -17,7 +17,7 @@ public class Player {
     private int NoOfMatches;
     private int totalRuns;
     private int totalWickets;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="team_id",nullable = false)
-    private SeasonTeam team;
+//    @ManyToOne(fetch = FetchType.LAZY)
+//    @JoinColumn(name="team_id",nullable = false)
+//    private SeasonTeam team;
 }

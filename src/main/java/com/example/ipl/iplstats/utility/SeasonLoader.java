@@ -1,11 +1,9 @@
 package com.example.ipl.iplstats.utility;
 
-import com.example.ipl.iplstats.data.MatchSummaryDTO;
-import com.example.ipl.iplstats.data.MatchesDTO;
-import com.example.ipl.iplstats.data.SeasonDTO;
-import com.example.ipl.iplstats.data.TeamDTO;
+import com.example.ipl.iplstats.data.*;
 import com.example.ipl.iplstats.exception.IPLStatException;
 import com.example.ipl.iplstats.service.SeasonInterface;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.simpleflatmapper.csv.CsvMapperFactory;
 import org.simpleflatmapper.csv.CsvParser;
@@ -22,39 +20,17 @@ public class SeasonLoader {
     @Autowired
     private SeasonInterface seasonInterface;
 
-    private Set<MatchesDTO> matches=new HashSet<MatchesDTO>();;
+    private Set<MatchesDTO> matches=new HashSet<MatchesDTO>();
 
-    private List<TeamDTO> teams = new ArrayList<TeamDTO>();
-
+private Set<DeliveryDetailsDTO> deliveryInfoList=new HashSet<DeliveryDetailsDTO>();
+    @Getter
+    private Set<TeamDTO> teams = new HashSet<TeamDTO>();
     private List<SeasonDTO> seasons = new ArrayList<SeasonDTO>();
-
     private List<MatchSummaryDTO> summaryDTOS = new ArrayList<MatchSummaryDTO>();
 
-    public SeasonLoader(){
-//        File matchFile = new File(SeasonLoader.class.getClassLoader().getResource("matches.csv").getFile());
-//
-//        try {
-//            parseMatchesFile(matchFile);
-//        } catch (IPLStatException e) {
-//            e.printStackTrace();
-//        }
-
-    }
 
     public List<SeasonDTO> parseMatchesFile(File csvFile)throws  IPLStatException{
         try {
-
-//            CsvParser
-//                    .forEach(csvFile, row -> System.out.println(row));
-
-//             CsvParser
-//                     .mapWith(CsvMapperFactory
-//                     .newInstance()
-//                     .newBuilder(MatchesDTO.class)
-//                     .addMapping("id")
-//                     .addMapping("season")
-//                     .mapper()).forEach(csvFile, matchesDTO -> matches.add(matchesDTO));
-
             CsvParser
                     .mapWith(CsvMapperFactory
                             .newInstance()
@@ -62,18 +38,9 @@ public class SeasonLoader {
                             .newMapper(MatchesDTO.class))
                     .forEach(csvFile,matchesDTO -> matches.add(matchesDTO));
 
-            log.debug("matches = " + matches.size());
+//            log.debug("matches = " + matches.size());
 
             loadSeasons();
-
-
-//
-//            for (Iterator<SeasonDTO> iterator = seasons.iterator(); iterator.hasNext(); ) {
-//                SeasonDTO next =  iterator.next();
-//                seasonInterface.addSeason(next);
-//            }
-
-
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -89,46 +56,54 @@ public class SeasonLoader {
             }
 
         });
-
-
-        seasons.forEach(System.out::println);
-
-
+//        seasons.forEach(System.out::println);
     }
 
 
     private void createSeason(MatchesDTO match)throws IPLStatException {
 
-        SeasonDTO seasonDTO = new SeasonDTO(match.getSeason());
+//        SeasonDTO seasonDTO = new SeasonDTO(match.getSeason());
+////        int seasonIndex = seasons.indexOf(seasonDTO);
+//        if(!seasons.contains(seasonDTO)){
+//            seasons.add(seasonDTO);
+//        }
 
-        int seasonIndex = seasons.indexOf(seasonDTO);
+        SeasonDTO seasonDTO =null;
+        boolean found = false;
+        Iterator<SeasonDTO> seasonDTOIterator = seasons.iterator();
+        while(seasonDTOIterator.hasNext()){
+            seasonDTO = seasonDTOIterator.next();
+            if(String.valueOf(seasonDTO.getYear()).equals(match.getSeason())){
+                found = true;
+                break;
+            }
+        }
 
-        if(seasonIndex !=-1){
-            seasonDTO = seasons.get(seasonIndex);
-        }else{
+        if(!found){
+            seasonDTO = new SeasonDTO(match.getSeason());
             seasons.add(seasonDTO);
         }
         seasonDTO.addTeamDTO(getTeam(seasonDTO,match.getTeam1()));
         seasonDTO.addTeamDTO(getTeam(seasonDTO,match.getTeam2()));
-
         seasonDTO.addMatchDTO(getMatchSummary(seasonDTO,match));
-
-//        return seasonInterface.addSeason(seasonDTO);
-
     }
 
 
     private TeamDTO getTeam(SeasonDTO seasonDTO, String name){
-        TeamDTO team = new TeamDTO(name);
-//        team.setSeasonDTO(seasonDTO);
-        int teamIndex = teams.indexOf(team);
-
-        if(teamIndex!=-1){
-            return  teams.get(teamIndex);
-        }else{
+        TeamDTO team =null;
+        boolean found = false;
+        Iterator<TeamDTO> teamIter = teams.iterator();
+        while(teamIter.hasNext()){
+            team = teamIter.next();
+            if(team.getName().equals(name)){
+                found= true;
+                break;
+            }
+        }
+        if(!found){
+            team = new TeamDTO(name);
             teams.add(team);
         }
-
         return team;
 
     }
@@ -143,7 +118,6 @@ public class SeasonLoader {
         MatchSummaryDTO matSummary = new MatchSummaryDTO(match.getId(),match.getCity(),match.getVenue(),teamA,teamB,tossWinner,
                 match.getToss_decision(),winner,match.getWin_by_runs(),match.getWin_by_wickets());
         matSummary.setDate(match.getDate());
-//        matSummary.setSeasonDTO(seasonDTO);
         int summaryIndex = summaryDTOS.indexOf(matSummary);
 
         if(summaryIndex!=-1){
@@ -155,12 +129,33 @@ public class SeasonLoader {
 
     }
 
-    public static void main(String[] args) {
-        File matches = new File(SeasonLoader.class.getClassLoader().getResource("matches.csv").getFile());
-
-        SeasonLoader delegate = new SeasonLoader();
+    public Set<DeliveryDetailsDTO> parseDeliveriesFile(File csvFile)throws  IPLStatException{
         try {
-            delegate.parseMatchesFile(matches);
+            CsvParser
+                    .mapWith(CsvMapperFactory
+                            .newInstance()
+                            .defaultDateFormat("yyyy-MM-dd")
+                            .newMapper(DeliveryDetailsDTO.class))
+                    .forEach(csvFile,matchDetailsDTO -> deliveryInfoList.add(matchDetailsDTO));
+
+            log.debug("matches = " + deliveryInfoList.size());
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return deliveryInfoList;
+    }
+
+    public static void main(String[] args) {
+        SeasonLoader delegate = new SeasonLoader();
+        File matches = new File(SeasonLoader.class.getClassLoader().getResource("matches.csv").getFile());
+        try {
+            List<SeasonDTO> seasonDTOList = delegate.parseMatchesFile(matches);
+            seasonDTOList.forEach(seasonDTO-> {
+
+                System.out.println(seasonDTO);
+            });
         } catch (IPLStatException e) {
             e.printStackTrace();
         }

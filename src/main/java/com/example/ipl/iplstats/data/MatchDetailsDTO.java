@@ -23,7 +23,7 @@ public class MatchDetailsDTO {
     private String batsman;
     private String nonStriker;
     private String bowler;
-    private boolean isSuperOver;
+    private boolean superOver;
     private int wideRuns;
     private int byeRuns;
     private int legbyeRuns;

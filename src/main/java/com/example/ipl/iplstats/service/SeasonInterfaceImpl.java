@@ -6,10 +6,9 @@ import com.example.ipl.iplstats.dao.TeamDAO;
 import com.example.ipl.iplstats.data.MatchSummaryDTO;
 import com.example.ipl.iplstats.data.SeasonDTO;
 import com.example.ipl.iplstats.data.TeamDTO;
-import com.example.ipl.iplstats.entity.MatchSummary;
-import com.example.ipl.iplstats.entity.Season;
-import com.example.ipl.iplstats.entity.SeasonTeam;
+import com.example.ipl.iplstats.entity.*;
 import com.example.ipl.iplstats.exception.IPLStatException;
+import com.example.ipl.iplstats.loader.IPLDataLoader;
 import com.example.ipl.iplstats.mapper.SeasonMapper;
 import com.example.ipl.iplstats.utility.SeasonLoader;
 import lombok.extern.java.Log;
@@ -17,13 +16,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.mapstruct.factory.Mappers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Isolation;
 
+import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Component
 @Slf4j
@@ -40,10 +38,13 @@ public class SeasonInterfaceImpl implements SeasonInterface {
     private MatchDAO matchDAO;
     @Autowired
     private SeasonLoader loader;
+    @Autowired
+    private IPLDataLoader dataLoader;
+
+
 
     @Override
-    @Transactional
-    public SeasonDTO addSeason(SeasonDTO season) throws IPLStatException {
+     public SeasonDTO addSeason(SeasonDTO season) throws IPLStatException {
         System.out.println("Season Details:" + season);
         if(season!=null){
             Season seasonEntity = mapper.dtoToDomain(season);
@@ -62,7 +63,7 @@ public class SeasonInterfaceImpl implements SeasonInterface {
 
             seasonPage.forEach(season -> {
                 SeasonDTO seasonDTO = mapper.domainToDTO(season);
-                Set<SeasonTeam> teams = teamDAO.findBySeason(season);
+                Set<Team> teams = teamDAO.findBySeason(season);
                 log.debug("No of teams in season "+ season.getYear() + " is "+teams.size());
                 Set<MatchSummary> matches = matchDAO.findBySeason(season);
                 log.debug("No of matches in season "+ season.getYear() + " is "+matches.size());
@@ -83,30 +84,35 @@ public class SeasonInterfaceImpl implements SeasonInterface {
     }
 
 
-    @Override
-    public void loadSeasons(File file) throws IPLStatException {
 
-       List<SeasonDTO> seasons = loader.parseMatchesFile(file);
+    @Transactional
+    public void loadMatches(File file)throws IPLStatException{
 
+        dataLoader.parseMatches(file);
 
-        for (Iterator<SeasonDTO> iterator = seasons.iterator(); iterator.hasNext(); ) {
-            SeasonDTO next =  iterator.next();
-            SeasonDTO seasonDTO= addSeason(next);
+        Iterable<Team> teams = dataLoader.getTeams();
+        teamDAO.save(teams);
 
-            Set<TeamDTO> teams = next.getTeams();
-            teams.forEach(teamDTO -> {
-                SeasonTeam team = mapper.teamDTOToSeasonTeam(teamDTO);
-                team.setSeason(mapper.dtoToDomain(seasonDTO));
-                teamDAO.save(team);
-            });
+        Iterable<Season> seasons = dataLoader.getSeasons();
+        seasonRepo.save(seasons);
 
-            Set<MatchSummaryDTO> matches = next.getMatches();
-            matches.forEach(matchSummaryDTO -> {
-                MatchSummary matchSummary = mapper.matchSummaryDTOToMatch(matchSummaryDTO);
-                matchSummary.setSeason(mapper.dtoToDomain(seasonDTO));
-                matchDAO.save(matchSummary);
-            });
+        Iterable<MatchSummary> summaries = dataLoader.getSummaryList();
+        matchDAO.save(summaries);
 
-        }
     }
+
+
+    public void loadDeliveryDetails(File file) throws IPLStatException{
+
+        dataLoader.parseDeliveriesFile(file);
+
+        List<MatchDetails> detailsList = dataLoader.getDetailsList();
+
+        detailsList.forEach(matchDetails -> {
+            MatchSummary summary = matchDAO.getOne(matchDetails.getMatchID());
+
+        });
+
+    }
+
 }

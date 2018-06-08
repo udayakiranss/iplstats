@@ -5,10 +5,12 @@ import com.example.ipl.iplstats.data.SeasonDTO;
 import com.example.ipl.iplstats.data.TeamDTO;
 import com.example.ipl.iplstats.entity.MatchSummary;
 import com.example.ipl.iplstats.entity.Season;
-import com.example.ipl.iplstats.entity.SeasonTeam;
+import com.example.ipl.iplstats.entity.Team;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mappings;
 import org.mapstruct.ReportingPolicy;
+
+import java.util.Set;
 
 @Mapper(unmappedTargetPolicy = ReportingPolicy.WARN, componentModel = "spring")
 public interface SeasonMapper {
@@ -17,9 +19,11 @@ public interface SeasonMapper {
 
     SeasonDTO domainToDTO(final  Season season);
 
-    SeasonTeam teamDTOToSeasonTeam(TeamDTO team);
+    Team teamDTOToTeam(TeamDTO team);
 
-    TeamDTO seasonTeamToTeamDTO(SeasonTeam sTeam);
+    Iterable<Team> teamDTOToTeamSet(Iterable<TeamDTO> teamDTOSet);
+
+    TeamDTO seasonTeamToTeamDTO(Team sTeam);
     @Mappings({
             @org.mapstruct.Mapping(source = "summaryDTO.teamA.name", target = "teamA"),
             @org.mapstruct.Mapping(source = "summaryDTO.teamB.name", target = "teamB"),

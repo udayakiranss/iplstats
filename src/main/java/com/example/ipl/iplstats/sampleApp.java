@@ -1,6 +1,7 @@
 package com.example.ipl.iplstats;
 
 import com.example.ipl.iplstats.dao.SeasonDAO;
+import com.example.ipl.iplstats.dao.TeamDAO;
 import com.example.ipl.iplstats.entity.*;
 import com.example.ipl.iplstats.dao.DepartmentDAO;
 import com.example.ipl.iplstats.dao.EmployeeDAO;
@@ -22,6 +23,8 @@ public class sampleApp implements CommandLineRunner {
     @Autowired
     private SeasonDAO seasonDAO;
     @Autowired
+    private TeamDAO teamDAO;
+    @Autowired
     private  DepartmentDAO departmentDAO;
     @Autowired
     private EmployeeDAO employeeDAO;
@@ -38,14 +41,13 @@ public class sampleApp implements CommandLineRunner {
         Season season = new Season();
         season.setYear("100");
 
-
-
-        SeasonTeam team = new SeasonTeam();
+        Team team = new Team();
         team.setName("IIII");
-        team.setSeason(season);
-        Set<SeasonTeam> teams = new HashSet<SeasonTeam>();
+        teamDAO.save(team);
+//        team.setSeason(season);
+        Set<Team> teams = new HashSet<Team>();
         teams.add(team);
-//        season.setTeams(teams);
+        season.setTeams(teams);
 
         seasonDAO.save(season);
 
@@ -53,32 +55,32 @@ public class sampleApp implements CommandLineRunner {
         Season season2 = new Season();
         season2.setYear("200");
 
-        SeasonTeam team2 = new SeasonTeam();
-        team2.setName("JJJJJJ");
-        team2.setSeason(season2);
-        Set<SeasonTeam> teams2 = new HashSet<SeasonTeam>();
-        teams2.add(team2);
-//        season2.setTeams(teams2);
+//        Team team2 = new Team();
+//        team2.setName("JJJJJJ");
+//        teamDAO.save(team2);
+//        team2.setSeason(season2);
+        Set<Team> teams2 = new HashSet<Team>();
+        teams2.add(team);
 
         seasonDAO.save(season2);
 
         System.out.println("Season data:"+seasonDAO.findAll());
 
-        Employee emp1 = new Employee();
-        emp1.setName("U");
+//        Employee emp1 = new Employee();
+//        emp1.setName("U");
+//
+//        Employee emp2 = new Employee();
+//        emp2.setName("K");
+//
+//        Department dept = new Department();
+//        dept.setName("Maths");
+//        dept.getEmployees().add(emp1);
+//        departmentDAO.save(dept);
 
-        Employee emp2 = new Employee();
-        emp2.setName("K");
-
-        Department dept = new Department();
-        dept.setName("Maths");
-        dept.getEmployees().add(emp1);
-        departmentDAO.save(dept);
-
-        Department dept1 = new Department();
-        dept1.setName("PH");
-        dept1.getEmployees().add(emp2);
-        departmentDAO.save(dept1);
+//        Department dept1 = new Department();
+//        dept1.setName("PH");
+//        dept1.getEmployees().add(emp2);
+//        departmentDAO.save(dept1);
 
 
 
