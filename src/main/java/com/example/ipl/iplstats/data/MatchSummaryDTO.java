@@ -1,5 +1,6 @@
 package com.example.ipl.iplstats.data;
 
+import com.example.ipl.iplstats.entity.MatchResult;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -21,6 +22,7 @@ public class MatchSummaryDTO {
     private TeamDTO teamB;
     private TeamDTO tossWinner;
     private String tossDecision;
+    private MatchResult result;
     private TeamDTO winner;
     private int winByRuns;
     private int winByWickets;
@@ -29,7 +31,10 @@ public class MatchSummaryDTO {
 
     private List<MatchDetailsDTO> matchDetails;
 
-    public MatchSummaryDTO(String id,String city, String venue, TeamDTO teamA, TeamDTO teamB, TeamDTO tossWinner, String tossDecision,
+
+
+    public MatchSummaryDTO(String id,String city, String venue, TeamDTO teamA, TeamDTO teamB, TeamDTO tossWinner,
+                           String tossDecision,MatchResult result,
                            TeamDTO winner, String winByRuns, String winByWickets){
         this.city= city;
         this.venue = venue;
@@ -37,6 +42,7 @@ public class MatchSummaryDTO {
         this.teamB = teamB;
         this.tossWinner = tossWinner;
         this.tossDecision = tossDecision;
+        this.result= result;
         this.winner = winner;
         this.winByRuns = new Integer(winByRuns).intValue();
         this.winByWickets = new Integer(winByWickets).intValue();;

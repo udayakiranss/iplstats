@@ -1,6 +1,7 @@
 package com.example.ipl.iplstats.utility;
 
 import com.example.ipl.iplstats.data.*;
+import com.example.ipl.iplstats.entity.MatchResult;
 import com.example.ipl.iplstats.exception.IPLStatException;
 import com.example.ipl.iplstats.service.SeasonInterface;
 import lombok.Getter;
@@ -116,8 +117,9 @@ private Set<DeliveryDetailsDTO> deliveryInfoList=new HashSet<DeliveryDetailsDTO>
         TeamDTO winner = getTeam(seasonDTO,match.getWinner());
 
         MatchSummaryDTO matSummary = new MatchSummaryDTO(match.getId(),match.getCity(),match.getVenue(),teamA,teamB,tossWinner,
-                match.getToss_decision(),winner,match.getWin_by_runs(),match.getWin_by_wickets());
+                match.getToss_decision(),MatchResult.NORMAL,winner,match.getWin_by_runs(),match.getWin_by_wickets());
         matSummary.setDate(match.getDate());
+
         int summaryIndex = summaryDTOS.indexOf(matSummary);
 
         if(summaryIndex!=-1){

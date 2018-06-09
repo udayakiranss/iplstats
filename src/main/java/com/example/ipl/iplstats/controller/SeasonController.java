@@ -2,6 +2,7 @@ package com.example.ipl.iplstats.controller;
 
 
 import com.example.ipl.iplstats.data.SeasonDTO;
+import com.example.ipl.iplstats.data.SeasonPointsDTO;
 import com.example.ipl.iplstats.exception.IPLStatException;
 import com.example.ipl.iplstats.service.SeasonInterface;
 import com.example.ipl.iplstats.util.RestResponse;
@@ -27,8 +28,7 @@ import java.util.Map;
 public class SeasonController {
     @Autowired
     private SeasonInterface seasonService;
-    @Autowired
-    private SeasonLoader loader;
+
 
     @RequestMapping(value = "/season", method = RequestMethod.POST)
     public RestResponse<Map<String, String>> addSeason(@RequestBody SeasonDTO season){
@@ -122,5 +122,19 @@ public class SeasonController {
             e.printStackTrace();
         }
         return isLoadSuccessful;
+    }
+    @PostMapping(value = "/pointsTable",consumes = "application/json")
+    public RestResponse<SeasonPointsDTO> fetchPointsTable(@RequestBody SeasonDTO seasonDTO){
+        RestResponse<SeasonPointsDTO> responseDTO = new RestResponse<>();
+        try {
+            SeasonPointsDTO pointsDTO=seasonService.fetchPointsTable(seasonDTO);
+            responseDTO.setResponse(pointsDTO);
+        } catch (IPLStatException e) {
+
+            responseDTO.setErrorCode(e.getErrorCode());
+            responseDTO.setError(true);
+            responseDTO.setErrorMessage(e.getMessage());
+        }
+        return responseDTO;
     }
 }

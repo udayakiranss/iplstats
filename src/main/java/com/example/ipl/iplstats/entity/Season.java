@@ -41,8 +41,7 @@ public class Season {
         teams.add(team);
     }
 
-    public void addMatch(MatchSummary matchSummary) {
-    }
+
 }
 
 

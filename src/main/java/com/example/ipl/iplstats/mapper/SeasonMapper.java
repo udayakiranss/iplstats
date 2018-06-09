@@ -25,19 +25,19 @@ public interface SeasonMapper {
 
     TeamDTO seasonTeamToTeamDTO(Team sTeam);
     @Mappings({
-            @org.mapstruct.Mapping(source = "summaryDTO.teamA.name", target = "teamA"),
-            @org.mapstruct.Mapping(source = "summaryDTO.teamB.name", target = "teamB"),
-            @org.mapstruct.Mapping(source = "summaryDTO.tossWinner.name", target = "tossWinner"),
-            @org.mapstruct.Mapping(source = "summaryDTO.winner.name", target = "winner"),
+            @org.mapstruct.Mapping(source = "summaryDTO.teamA", target = "teamA"),
+            @org.mapstruct.Mapping(source = "summaryDTO.teamB", target = "teamB"),
+            @org.mapstruct.Mapping(source = "summaryDTO.tossWinner", target = "tossWinner"),
+            @org.mapstruct.Mapping(source = "summaryDTO.winner", target = "winner"),
 
     })
     MatchSummary matchSummaryDTOToMatch(MatchSummaryDTO summaryDTO);
 
     @Mappings({
-            @org.mapstruct.Mapping(target = "teamA.name", source = "summary.teamA"),
-            @org.mapstruct.Mapping(target = "teamB.name", source = "summary.teamB"),
-            @org.mapstruct.Mapping(target = "tossWinner.name", source = "summary.tossWinner"),
-            @org.mapstruct.Mapping(target = "winner.name", source = "summary.winner"),
+            @org.mapstruct.Mapping(target = "teamA", source = "summary.teamA"),
+            @org.mapstruct.Mapping(target = "teamB", source = "summary.teamB"),
+            @org.mapstruct.Mapping(target = "tossWinner", source = "summary.tossWinner"),
+            @org.mapstruct.Mapping(target = "winner", source = "summary.winner"),
 
     })
     MatchSummaryDTO matchSummaryToMatchDTO(MatchSummary summary);

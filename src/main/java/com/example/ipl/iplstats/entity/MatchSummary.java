@@ -15,12 +15,20 @@ public class MatchSummary {
     private Date date;
     private String city;
     private String venue;
-
-    private String teamA;
-    private String teamB;
-    private String tossWinner;
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name="teamA")
+    private Team teamA;
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name="teamB")
+    private Team teamB;
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name="tossWinner")
+    private Team tossWinner;
     private String tossDecision;
-    private String winner;
+    private String result;
+    @ManyToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name="winner")
+    private Team winner;
     private int winByRuns;
     private int winByWickets;
 
@@ -29,9 +37,9 @@ public class MatchSummary {
     private Season season;
 
 
-    public MatchSummary(String id, String city, String venue, String teamA, String teamB, String tossWinner,
+    public MatchSummary(String id, String city, String venue, Team teamA, Team teamB, Team tossWinner,
                            String tossDecision,
-                           String winner, String winByRuns, String winByWickets){
+                        Team winner, String winByRuns, String winByWickets){
         this.city= city;
         this.venue = venue;
         this.teamA = teamA;

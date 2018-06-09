@@ -4,10 +4,7 @@ import com.example.ipl.iplstats.dao.MatchDAO;
 import com.example.ipl.iplstats.data.DeliveryDetailsDTO;
 import com.example.ipl.iplstats.data.MatchDetailsDTO;
 import com.example.ipl.iplstats.data.MatchesDTO;
-import com.example.ipl.iplstats.entity.MatchDetails;
-import com.example.ipl.iplstats.entity.MatchSummary;
-import com.example.ipl.iplstats.entity.Season;
-import com.example.ipl.iplstats.entity.Team;
+import com.example.ipl.iplstats.entity.*;
 import com.example.ipl.iplstats.exception.IPLStatException;
 import com.example.ipl.iplstats.mapper.DeliveryMapper;
 import com.example.ipl.iplstats.service.SeasonInterface;
@@ -155,9 +152,11 @@ public class IPLDataLoader {
         Team tossWinner = getTeam(match.getToss_winner());
         Team winner = getTeam(match.getWinner());
 
-        MatchSummary matSummary = new MatchSummary(match.getId(),match.getCity(),match.getVenue(),teamA.getName(),
-                teamB.getName(),tossWinner.getName(),
-                match.getToss_decision(),winner.getName(),match.getWin_by_runs(),match.getWin_by_wickets());
+        MatchSummary matSummary = new MatchSummary(match.getId(),match.getCity(),match.getVenue(),teamA,
+                teamB,tossWinner,
+                match.getToss_decision(),winner,match.getWin_by_runs(),match.getWin_by_wickets());
+
+        matSummary.setResult(match.getResult());
 
         matSummary.setDate(match.getDate());
         matSummary.setSeason(season);
