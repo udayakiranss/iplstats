@@ -1,6 +1,8 @@
 package com.example.ipl.iplstats.data;
 
 
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
 
 import javax.persistence.FetchType;
@@ -16,13 +18,15 @@ import java.util.Set;
 @EqualsAndHashCode(of ="year")
 @NoArgsConstructor
 @AllArgsConstructor
+@ApiModel(value = "SeasonDTO" , description = "Season Details Object")
 public class SeasonDTO {
 
     private Long id;
+    @ApiModelProperty(value = "Year" , position = 1 , required = true)
     private int year;
+    @ApiModelProperty(value = "Description" , position = 2 , required = false)
     private String description;
     private Set<TeamDTO> teams;
-
     private Set<MatchSummaryDTO> matches;
 
     public SeasonDTO(String year){

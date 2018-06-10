@@ -1,5 +1,8 @@
 package com.example.ipl.iplstats.entity;
 
+import lombok.Getter;
+import lombok.Setter;
+
 public enum MatchResult {
 
 
@@ -8,6 +11,8 @@ public enum MatchResult {
     NORMAL("normal"), TIE("tie"), NO_RESULT("no result");
 
     // declaring private variable for getting values
+    @Setter
+    @Getter
     private String result;
 
     // getter method

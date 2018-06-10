@@ -45,21 +45,6 @@ logging:
       console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
       file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
   file: /Users/udaykiranss/Code/Logs/application.log
-#
-#securityDefinitions:
-#  bearerAuth:
-#    type: apiKey
-#    in: header
-#    name: Authorization
-#    description: Enter your bearer token in the format **Bearer &lt;token>**
-#
-#security:
-#  - bearerAuth: []
 
-#  appenders:
-#    - type: console
-#      threshold: DEBUG
-#      timezone: UTC
-#      target: stdout
 
 

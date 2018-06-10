@@ -117,7 +117,7 @@ private Set<DeliveryDetailsDTO> deliveryInfoList=new HashSet<DeliveryDetailsDTO>
         TeamDTO winner = getTeam(seasonDTO,match.getWinner());
 
         MatchSummaryDTO matSummary = new MatchSummaryDTO(match.getId(),match.getCity(),match.getVenue(),teamA,teamB,tossWinner,
-                match.getToss_decision(),MatchResult.NORMAL,winner,match.getWin_by_runs(),match.getWin_by_wickets());
+                match.getToss_decision(),match.getResult(),winner,match.getWin_by_runs(),match.getWin_by_wickets());
         matSummary.setDate(match.getDate());
 
         int summaryIndex = summaryDTOS.indexOf(matSummary);

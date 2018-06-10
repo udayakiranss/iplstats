@@ -135,7 +135,7 @@ public class IPLDataLoader {
                 break;
             }
         }
-        if(!found){
+        if(!found && name!=null && !name.isEmpty()){
             team = new Team();
             team.setName(name);
             teams.add(team);

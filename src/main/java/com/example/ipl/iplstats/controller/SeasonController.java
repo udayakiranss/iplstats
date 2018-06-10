@@ -7,10 +7,7 @@ import com.example.ipl.iplstats.exception.IPLStatException;
 import com.example.ipl.iplstats.service.SeasonInterface;
 import com.example.ipl.iplstats.util.RestResponse;
 import com.example.ipl.iplstats.utility.SeasonLoader;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import io.swagger.annotations.Authorization;
+import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -18,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import springfox.documentation.annotations.ApiIgnore;
 
 import java.io.File;
 import java.security.Principal;
@@ -29,11 +27,20 @@ import java.util.Map;
 @RestController
 @Slf4j
 @RequestMapping(value = "/iplstats/")
+@Api(
+        value = "IPL Statistics Operations"
+)
+@ApiResponses(value = {
+        @ApiResponse(code = 415, message = "Content type not supported.")
+})
 public class SeasonController {
+
+
     @Autowired
     private SeasonInterface seasonService;
 
-
+    @ApiOperation(notes = "Add a new season",
+            value = "To add a new season")
     @RequestMapping(value = "/season", method = RequestMethod.POST)
     public RestResponse<Map<String, String>> addSeason(@RequestBody SeasonDTO season){
         log.debug("Season DTO", season);
@@ -65,19 +72,16 @@ public class SeasonController {
             return new ResponseEntity("please select a file!", HttpStatus.OK);
         }
         log.debug("File Name:" + uploadfile.getOriginalFilename());
-//        try {
-//
-//
-//
-//        } catch (IOException e) {
-//            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-//        }
+
 
         return new ResponseEntity("Successfully uploaded - " +
                 uploadfile.getOriginalFilename(), new HttpHeaders(), HttpStatus.OK);
 
     }
 
+    @ApiOperation(notes = "Fetch all season details",
+            value = "To get all season details"
+    )
     @RequestMapping(value = "/season", method = RequestMethod.GET)
 //    @PreAuthorize("#oauth2.hasScope('custom_mod')")
     public RestResponse<Map<String, List<SeasonDTO>>> getSeasons(){
@@ -98,20 +102,15 @@ public class SeasonController {
         return response;
     }
 
-    @RequestMapping(value = "/test", method = RequestMethod.GET)
-    public SeasonDTO getTestSeason(){
-        SeasonDTO season = new SeasonDTO();
-        season.setDescription("Test");
-        season.setId(new Long(1));
-        season.setYear(2001);
-        return season;
-    }
-
     @GetMapping("/principal")
+    @ApiIgnore
     public Principal user(Principal principal) {
         return principal;
     }
 
+    @ApiOperation(notes = "Load IPL Data from the resources",
+            value = "Load IPL Data from the resources"
+    )
     @GetMapping("/loadData")
     public boolean loadData(){
         boolean isLoadSuccessful = false;
@@ -127,11 +126,12 @@ public class SeasonController {
         }
         return isLoadSuccessful;
     }
+
+
+
     @PostMapping(value = "/pointsTable",consumes = "application/json")
     @ApiOperation(notes = "Fetch the points table for a season",
-            value = "To get the points table for a season",
-            nickname = "listAllCustomerEvents"
-           )
+            value = "To get the points table for a season")
     @ApiResponses(value = {
             @ApiResponse(code = 415, message = "Content type not supported.")
     })

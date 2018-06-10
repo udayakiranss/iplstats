@@ -22,7 +22,7 @@ public class MatchSummaryDTO {
     private TeamDTO teamB;
     private TeamDTO tossWinner;
     private String tossDecision;
-    private MatchResult result;
+    private String result;
     private TeamDTO winner;
     private int winByRuns;
     private int winByWickets;
@@ -34,7 +34,7 @@ public class MatchSummaryDTO {
 
 
     public MatchSummaryDTO(String id,String city, String venue, TeamDTO teamA, TeamDTO teamB, TeamDTO tossWinner,
-                           String tossDecision,MatchResult result,
+                           String tossDecision,String result,
                            TeamDTO winner, String winByRuns, String winByWickets){
         this.city= city;
         this.venue = venue;
@@ -52,7 +52,19 @@ public class MatchSummaryDTO {
 
 
     public String getResult(){
-        return result.getResult();
+        return result;
+    }
+
+    public void setResult(String result){
+
+        if(result == MatchResult.NORMAL.getResult()){
+            result = MatchResult.NORMAL.getResult();
+        }else if(result == MatchResult.TIE.getResult()){
+            result = MatchResult.TIE.getResult();
+        }else{
+            result = MatchResult.NO_RESULT.getResult();
+        }
+
     }
 
 
