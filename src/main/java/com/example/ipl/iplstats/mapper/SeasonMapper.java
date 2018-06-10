@@ -29,6 +29,7 @@ public interface SeasonMapper {
             @org.mapstruct.Mapping(source = "summaryDTO.teamB", target = "teamB"),
             @org.mapstruct.Mapping(source = "summaryDTO.tossWinner", target = "tossWinner"),
             @org.mapstruct.Mapping(source = "summaryDTO.winner", target = "winner"),
+            @org.mapstruct.Mapping(target = "result", source = "summaryDTO.result")
 
     })
     MatchSummary matchSummaryDTOToMatch(MatchSummaryDTO summaryDTO);
@@ -38,6 +39,7 @@ public interface SeasonMapper {
             @org.mapstruct.Mapping(target = "teamB", source = "summary.teamB"),
             @org.mapstruct.Mapping(target = "tossWinner", source = "summary.tossWinner"),
             @org.mapstruct.Mapping(target = "winner", source = "summary.winner"),
+            @org.mapstruct.Mapping(target = "result", source = "summary.result")
 
     })
     MatchSummaryDTO matchSummaryToMatchDTO(MatchSummary summary);

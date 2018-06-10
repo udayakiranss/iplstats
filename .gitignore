@@ -80,3 +80,4 @@ fabric.properties
 mvnw
 mvnw.cmd
 target/
+pre-push

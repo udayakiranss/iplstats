@@ -7,6 +7,10 @@ import com.example.ipl.iplstats.exception.IPLStatException;
 import com.example.ipl.iplstats.service.SeasonInterface;
 import com.example.ipl.iplstats.util.RestResponse;
 import com.example.ipl.iplstats.utility.SeasonLoader;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.Authorization;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -124,6 +128,13 @@ public class SeasonController {
         return isLoadSuccessful;
     }
     @PostMapping(value = "/pointsTable",consumes = "application/json")
+    @ApiOperation(notes = "Fetch the points table for a season",
+            value = "To get the points table for a season",
+            nickname = "listAllCustomerEvents"
+           )
+    @ApiResponses(value = {
+            @ApiResponse(code = 415, message = "Content type not supported.")
+    })
     public RestResponse<SeasonPointsDTO> fetchPointsTable(@RequestBody SeasonDTO seasonDTO){
         RestResponse<SeasonPointsDTO> responseDTO = new RestResponse<>();
         try {

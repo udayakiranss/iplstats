@@ -51,6 +51,12 @@ public class MatchSummaryDTO {
 
 
 
+    public String getResult(){
+        return result.getResult();
+    }
+
+
+
     public static MatchSummaryDTO copy(MatchSummaryDTO matchSummaryDTO){
         MatchSummaryDTO matchSummaryDTO1 = new MatchSummaryDTO();
 

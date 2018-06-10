@@ -17,7 +17,8 @@ public class ResourceServerConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.requestMatchers()
-                .antMatchers("/login","/oauth/authorize")
+                .antMatchers("/login","/oauth/authorize","/v2/api-docs","/swagger-ui.html",
+                        "/swagger-resources/configuration/ui","/swagger-resources","/swagger-resources/configuration/security")
                 .and()
                 .authorizeRequests()
                 .anyRequest()
