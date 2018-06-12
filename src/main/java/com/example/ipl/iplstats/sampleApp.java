@@ -16,7 +16,6 @@ import javax.transaction.Transactional;
 import java.util.HashSet;
 import java.util.Set;
 
-@SpringBootApplication
 public class sampleApp implements CommandLineRunner {
     private static final Logger logger = LoggerFactory.getLogger(sampleApp.class);
 
