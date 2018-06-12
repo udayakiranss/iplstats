@@ -39,7 +39,7 @@ public class IPLDataLoader {
     private MatchDAO matchDAO;
 
 
-    public void parseMatches(File matchesFile)throws  IPLStatException{
+    public void parseMatches(String matchesFile)throws  IPLStatException{
 
         try {
             CsvParser
@@ -57,7 +57,7 @@ public class IPLDataLoader {
 
     }
 
-    public Set<DeliveryDetailsDTO> parseDeliveriesFile(File csvFile)throws  IPLStatException {
+    public Set<DeliveryDetailsDTO> parseDeliveriesFile(String csvFile)throws  IPLStatException {
         try {
             CsvParser
                     .mapWith(CsvMapperFactory

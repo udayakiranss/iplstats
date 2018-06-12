@@ -87,7 +87,7 @@ public class SeasonInterfaceImpl implements SeasonInterface {
 
 
     @Transactional
-    public void loadMatches(File file)throws IPLStatException{
+    public void loadMatches(String file)throws IPLStatException{
 
         dataLoader.parseMatches(file);
 
@@ -103,7 +103,7 @@ public class SeasonInterfaceImpl implements SeasonInterface {
     }
 
     @Transactional
-    public void loadDeliveryDetails(File file) throws IPLStatException{
+    public void loadDeliveryDetails(String file) throws IPLStatException{
 
         dataLoader.parseDeliveriesFile(file);
 

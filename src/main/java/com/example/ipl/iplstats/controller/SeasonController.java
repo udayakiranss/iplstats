@@ -9,6 +9,7 @@ import com.example.ipl.iplstats.util.RestResponse;
 import com.example.ipl.iplstats.utility.SeasonLoader;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpHeaders;
@@ -21,6 +22,7 @@ import springfox.documentation.annotations.ApiIgnore;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.Principal;
 import java.util.HashMap;
 import java.util.List;
@@ -126,8 +128,15 @@ public class SeasonController {
 //        File deliveriesFile = new File(SeasonLoader.class.getClassLoader().getResource("deliveries-sample.csv").getFile());
             File matchFile = ResourceUtils.getFile("classpath:matches.csv");
             File deliveriesFile = ResourceUtils.getFile("classpath:deliveries-sample.csv");
-            seasonService.loadMatches(matchFile);
-            seasonService.loadDeliveryDetails(deliveriesFile);
+
+            InputStream matchesStream=  this.getClass().getResourceAsStream("/matches.csv");
+            InputStream deliveryStream=  this.getClass().getResourceAsStream("/deliveries-sample.csv");
+
+            String matches = IOUtils.toString(matchesStream,"utf-8");
+            String deliveries = IOUtils.toString(deliveryStream,"utf-8");
+
+            seasonService.loadMatches(matches);
+            seasonService.loadDeliveryDetails(deliveries);
             isLoadSuccessful = true;
             restResponse.setResponse("Loaded Successfully");
         } catch (IPLStatException e) {
