@@ -10,14 +10,17 @@ import com.example.ipl.iplstats.utility.SeasonLoader;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.ResourceUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
 import java.io.File;
+import java.io.IOException;
 import java.security.Principal;
 import java.util.HashMap;
 import java.util.List;
@@ -38,6 +41,9 @@ public class SeasonController {
 
     @Autowired
     private SeasonInterface seasonService;
+
+    @Autowired
+    private ResourceLoader resourceLoader;
 
     @ApiOperation(notes = "Add a new season",
             value = "To add a new season")
@@ -112,19 +118,28 @@ public class SeasonController {
             value = "Load IPL Data from the resources"
     )
     @GetMapping("/loadData")
-    public boolean loadData(){
+    public RestResponse loadData(){
         boolean isLoadSuccessful = false;
-        File matchFile = new File(SeasonLoader.class.getClassLoader().getResource("matches.csv").getFile());
-        File deliveriesFile = new File(SeasonLoader.class.getClassLoader().getResource("deliveries-sample.csv").getFile());
-
+        RestResponse<String> restResponse = new RestResponse<String>();
         try {
+//        File matchFile = new File(SeasonLoader.class.getClassLoader().getResource("matches.csv").getFile());
+//        File deliveriesFile = new File(SeasonLoader.class.getClassLoader().getResource("deliveries-sample.csv").getFile());
+            File matchFile = ResourceUtils.getFile("classpath:matches.csv");
+            File deliveriesFile = ResourceUtils.getFile("classpath:deliveries-sample.csv");
             seasonService.loadMatches(matchFile);
             seasonService.loadDeliveryDetails(deliveriesFile);
             isLoadSuccessful = true;
+            restResponse.setResponse("Loaded Successfully");
         } catch (IPLStatException e) {
-            e.printStackTrace();
+            restResponse.setErrorCode(e.getErrorCode());
+            restResponse.setError(true);
+            restResponse.setErrorMessage(e.getErrorMessage());
+        } catch (IOException e){
+            restResponse.setErrorCode("IPL200");
+            restResponse.setError(true);
+            restResponse.setErrorMessage("IO Exception while parsing the data file");
         }
-        return isLoadSuccessful;
+        return restResponse;
     }
 
 
