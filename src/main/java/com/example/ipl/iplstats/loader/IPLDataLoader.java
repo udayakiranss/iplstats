@@ -52,6 +52,7 @@ public class IPLDataLoader {
             createSeason();
 
         } catch (IOException e) {
+            e.printStackTrace();
             throw new IPLStatException("IPLS111","Not able to parse matches files");
         }
 
@@ -82,6 +83,7 @@ public class IPLDataLoader {
 
 
         } catch (IOException e) {
+            e.printStackTrace();
             throw new IPLStatException("IPLS112","Not able to parse deliveries files");
         }
         return deliveryInfoList;

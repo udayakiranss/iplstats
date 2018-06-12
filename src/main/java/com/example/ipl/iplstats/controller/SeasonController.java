@@ -11,10 +11,12 @@ import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.FileCopyUtils;
 import org.springframework.util.ResourceUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,6 +25,8 @@ import springfox.documentation.annotations.ApiIgnore;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.security.Principal;
 import java.util.HashMap;
 import java.util.List;
@@ -122,28 +126,34 @@ public class SeasonController {
     @GetMapping("/loadData")
     public RestResponse loadData(){
         boolean isLoadSuccessful = false;
+        if(resourceLoader!=null){
+            log.debug("ResourceLoader:"+resourceLoader);
+        }
         RestResponse<String> restResponse = new RestResponse<String>();
         try {
-//        File matchFile = new File(SeasonLoader.class.getClassLoader().getResource("matches.csv").getFile());
-//        File deliveriesFile = new File(SeasonLoader.class.getClassLoader().getResource("deliveries-sample.csv").getFile());
-            File matchFile = ResourceUtils.getFile("classpath:matches.csv");
-            File deliveriesFile = ResourceUtils.getFile("classpath:deliveries-sample.csv");
 
-            InputStream matchesStream=  this.getClass().getResourceAsStream("/matches.csv");
-            InputStream deliveryStream=  this.getClass().getResourceAsStream("/deliveries-sample.csv");
+            ClassPathResource cpr = new ClassPathResource("matches.csv");
+            ClassPathResource cpr1 = new ClassPathResource("deliveries-sample.csv");
 
-            String matches = IOUtils.toString(matchesStream,"utf-8");
-            String deliveries = IOUtils.toString(deliveryStream,"utf-8");
+            byte[] bdata = FileCopyUtils.copyToByteArray(cpr.getInputStream());
+            String matchContent = new String(bdata, StandardCharsets.UTF_8);
 
-            seasonService.loadMatches(matches);
-            seasonService.loadDeliveryDetails(deliveries);
+            byte[] bdata1 = FileCopyUtils.copyToByteArray(cpr1.getInputStream());
+            String deiveryContent = new String(bdata1, StandardCharsets.UTF_8);
+
+
+            seasonService.loadMatches(matchContent);
+            seasonService.loadDeliveryDetails(deiveryContent);
             isLoadSuccessful = true;
             restResponse.setResponse("Loaded Successfully");
-        } catch (IPLStatException e) {
+        }
+        catch (IPLStatException e) {
             restResponse.setErrorCode(e.getErrorCode());
             restResponse.setError(true);
             restResponse.setErrorMessage(e.getErrorMessage());
-        } catch (IOException e){
+        }
+        catch (IOException e){
+            e.printStackTrace();
             restResponse.setErrorCode("IPL200");
             restResponse.setError(true);
             restResponse.setErrorMessage("IO Exception while parsing the data file");
