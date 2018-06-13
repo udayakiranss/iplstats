@@ -133,13 +133,13 @@ public class SeasonController {
         try {
 
             ClassPathResource cpr = new ClassPathResource("matches.csv");
-            ClassPathResource cpr1 = new ClassPathResource("deliveries-sample.csv");
+            ClassPathResource cprd = new ClassPathResource("deliveries-sample.csv");
 
-            byte[] bdata = FileCopyUtils.copyToByteArray(cpr.getInputStream());
-            String matchContent = new String(bdata, StandardCharsets.UTF_8);
+            byte[] matchData = FileCopyUtils.copyToByteArray(cpr.getInputStream());
+            String matchContent = new String(matchData, StandardCharsets.UTF_8);
 
-            byte[] bdata1 = FileCopyUtils.copyToByteArray(cpr1.getInputStream());
-            String deiveryContent = new String(bdata1, StandardCharsets.UTF_8);
+            byte[] deliveriesData = FileCopyUtils.copyToByteArray(cprd.getInputStream());
+            String deiveryContent = new String(deliveriesData, StandardCharsets.UTF_8);
 
 
             seasonService.loadMatches(matchContent);
