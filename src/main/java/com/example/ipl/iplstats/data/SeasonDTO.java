@@ -5,11 +5,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.*;
 
-import javax.persistence.FetchType;
-import javax.persistence.OneToMany;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 @Getter
@@ -45,6 +41,7 @@ public class SeasonDTO {
         if(matches==null){
             matches = new HashSet<MatchSummaryDTO>();
         }
+
         matches.add(summaryDTO);
 
     }

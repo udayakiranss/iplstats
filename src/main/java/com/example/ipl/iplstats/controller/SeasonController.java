@@ -7,6 +7,14 @@ import com.example.ipl.iplstats.exception.IPLStatException;
 import com.example.ipl.iplstats.service.SeasonInterface;
 import com.example.ipl.iplstats.util.RestResponse;
 import com.example.ipl.iplstats.utility.SeasonLoader;
+import com.google.cloud.dialogflow.v2.Intent;
+import com.google.cloud.dialogflow.v2.QueryResult;
+import com.google.cloud.dialogflow.v2.WebhookRequest;
+import com.google.cloud.dialogflow.v2.WebhookResponse;
+import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.Message;
+import com.google.protobuf.Struct;
+import com.google.protobuf.Value;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
@@ -181,5 +189,35 @@ public class SeasonController {
             responseDTO.setErrorMessage(e.getMessage());
         }
         return responseDTO;
+    }
+
+    @PostMapping(value = "/chatbotaction", produces="application/json", consumes="application/json")
+    @ResponseBody
+    @ApiIgnore
+    public WebhookResponse getChatBotResponse(@RequestBody String request){
+        WebhookResponse response = null;
+        log.debug("request:"+request);
+        try {
+            WebhookRequest request1 = WebhookRequest.parseFrom(request.getBytes());
+            if(request1!=null){
+                QueryResult result = request1.getQueryResult();
+                String action = result.getAction();
+                if(action.equals("SeasonResults")){
+                    WebhookResponse.Builder builder = WebhookResponse.newBuilder();
+                    builder.addFulfillmentMessages(
+                            Intent.Message.newBuilder().setText(Intent.Message.Text.newBuilder().addText("gfhgfhfh").build()).build());
+
+                    response = builder.build();
+                }
+            }
+        }catch (InvalidProtocolBufferException e){
+            e.printStackTrace();
+        }
+
+
+
+
+
+        return response;
     }
 }
