@@ -1,7 +1,8 @@
 package com.example.ipl.iplstats.config;
 
-import com.example.ipl.iplstats.adapter.WebhookRequestAdapter;
-import com.example.ipl.iplstats.adapter.WebhookResponseAdapter;
+import com.example.ipl.iplstats.adapter.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.google.cloud.dialogflow.v2.WebhookRequest;
 import com.google.cloud.dialogflow.v2.WebhookResponse;
 import com.google.common.collect.Lists;
@@ -15,6 +16,7 @@ import org.springframework.http.converter.ByteArrayHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.GsonHttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.http.converter.xml.SourceHttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 import springfox.documentation.builders.PathSelectors;
@@ -77,27 +79,32 @@ public class SwaggerConfig extends WebMvcConfigurerAdapter {
                 authorizationScopes));
     }
 
-    @Bean
-    public Gson gson() {
-        GsonBuilder b = new GsonBuilder();
-//        b.registerTypeAdapterFactory(HibernateProxyTypeAdapter.FACTORY);
-//        b.registerTypeAdapterFactory(DateTypeAdapter.FACTORY);
-//        b.registerTypeAdapterFactory(TimestampTypeAdapter.FACTORY);
-//        b.registerTypeAdapterFactory(LocalDateTypeAdapter.FACTORY);
-//        b.registerTypeAdapterFactory(LocalDateTimeTypeAdapter.FACTORY);
-        b.registerTypeAdapter(WebhookRequest.class, new WebhookRequestAdapter()).create();
-        b.registerTypeAdapter(WebhookResponse.class, new WebhookResponseAdapter()).create();
-        return b.create();
-    }
+//    @Bean
+//    public Gson gson() {
+//        GsonBuilder b = new GsonBuilder();
+////        b.registerTypeAdapterFactory(HibernateProxyTypeAdapter.FACTORY);
+////        b.registerTypeAdapterFactory(DateTypeAdapter.FACTORY);
+////        b.registerTypeAdapterFactory(TimestampTypeAdapter.FACTORY);
+////        b.registerTypeAdapterFactory(LocalDateTypeAdapter.FACTORY);
+////        b.registerTypeAdapterFactory(LocalDateTimeTypeAdapter.FACTORY);
+//        b.registerTypeAdapter(WebhookRequest.class, new WebhookRequestAdapter()).create();
+//        b.registerTypeAdapter(WebhookResponse.class, new WebhookResponseAdapter()).create();
+//        return b.create();
+//    }
 
     @Override
     public void configureMessageConverters(
             List<HttpMessageConverter<?>> converters) {
-        GsonHttpMessageConverter gsonHttpMessageConverter = new GsonHttpMessageConverter();
-        gsonHttpMessageConverter.setGson(gson());
-        gsonHttpMessageConverter.setSupportedMediaTypes(Arrays
-                .asList(MediaType.APPLICATION_JSON));
-        converters.add(gsonHttpMessageConverter);
+        MappingJackson2HttpMessageConverter jackson2HttpMessageConverter = new MappingJackson2HttpMessageConverter();
+        ObjectMapper objectMapper = jackson2HttpMessageConverter.getObjectMapper();
+        SimpleModule module = new SimpleModule();
+        module.addDeserializer(WebhookRequest.class, new WebhookRequestDeSerializer(null));
+        module.addDeserializer(WebhookResponse.class, new WebhookResponseDeSerializer(null));
+
+        module.addSerializer(WebhookRequest.class, new WebhookRequestSerializer(null));
+        module.addSerializer(WebhookResponse.class, new WebhookResponseSerializer(null));
+        objectMapper.registerModule(module);
+        converters.add(jackson2HttpMessageConverter);
     }
 
 }

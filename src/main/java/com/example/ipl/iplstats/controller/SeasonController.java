@@ -204,16 +204,16 @@ public class SeasonController {
     @PostMapping(value = "/chatbotaction", produces="application/json", consumes="application/json")
     @ResponseBody
     @ApiIgnore
-    public WebhookResponse getChatBotResponse(@RequestBody String request){
+    public WebhookResponse getChatBotResponse(@RequestBody WebhookRequest request){
         WebhookResponse response = null;
         log.debug("request:"+request);
         try {
-            WebhookRequest.Builder builder = WebhookRequest.newBuilder();
-            JsonFormat.parser().merge(request,builder);
-            WebhookRequest request2 = builder.build();
+//            WebhookRequest.Builder builder = WebhookRequest.newBuilder();
+//            JsonFormat.parser().merge(request,builder);
+//            WebhookRequest request2 = builder.build();
 
-            if(request2!=null){
-                QueryResult result = request2.getQueryResult();
+            if(request!=null){
+                QueryResult result = request.getQueryResult();
                 String action = result.getAction();
 
                 WebhookResponse.Builder responseBuilder = WebhookResponse.newBuilder();
@@ -228,9 +228,7 @@ public class SeasonController {
 
                 }
             }
-        }catch (InvalidProtocolBufferException e){
-            e.printStackTrace();
-        }catch (IOException e){
+        }catch (Exception e){
             e.printStackTrace();
         }
 
