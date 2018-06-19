@@ -9,33 +9,46 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 
 @Configuration
-@EnableResourceServer
 public class ResourceServerConfig extends WebSecurityConfigurerAdapter {
+//    @Autowired
+//    private AuthenticationManager authenticationManager;
+
     @Autowired
-    private AuthenticationManager authenticationManager;
+    private BasicAuthenticationPoint basicAuthenticationPoint;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        http.csrf().disable();
         http.requestMatchers()
                 .antMatchers("/login","/oauth/authorize","/v2/api-docs","/swagger-ui.html",
                         "/swagger-resources/configuration/ui","/swagger-resources","/swagger-resources/configuration/security")
                 .and()
                 .authorizeRequests()
                 .anyRequest()
-                .authenticated()
-                .and()
-                .formLogin()
-                .permitAll();
+                .authenticated();
+//                .and()
+//                .formLogin()
+//                .permitAll();
+        http.httpBasic().authenticationEntryPoint(basicAuthenticationPoint);
     }
 
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.parentAuthenticationManager(authenticationManager)
-                .inMemoryAuthentication()
-                .withUser("Uday")
-                .password("uday")
-                .roles("USER");
-    }
 
+    
+
+//    @Override
+//    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+//        auth.parentAuthenticationManager(authenticationManager)
+//                .inMemoryAuthentication()
+//                .withUser("Uday")
+//                .password("uday")
+//                .roles("USER");
+//    }
+
+
+
+    @Autowired
+    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+        auth.inMemoryAuthentication().withUser("Uday").password("uday").roles("USER");
+    }
 
 }

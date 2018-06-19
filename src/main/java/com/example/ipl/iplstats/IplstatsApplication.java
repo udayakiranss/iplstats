@@ -9,7 +9,6 @@ import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
 //@EnableResourceServer
-@EnableAutoConfiguration(exclude = {JacksonAutoConfiguration.class})
 public class IplstatsApplication {
 
 	public static void main(String[] args) {
