@@ -11,10 +11,12 @@ import com.google.cloud.dialogflow.v2.Intent;
 import com.google.cloud.dialogflow.v2.QueryResult;
 import com.google.cloud.dialogflow.v2.WebhookRequest;
 import com.google.cloud.dialogflow.v2.WebhookResponse;
+import com.google.gson.Gson;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
+import com.google.protobuf.util.JsonFormat;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
@@ -30,9 +32,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import javax.annotation.PostConstruct;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.security.Principal;
@@ -58,6 +59,15 @@ public class SeasonController {
 
     @Autowired
     private ResourceLoader resourceLoader;
+    @Autowired
+    private Gson gson;
+
+    private static Gson gsonStatic ;
+
+    @PostConstruct
+    public void init() {
+        SeasonController.gsonStatic = gson;
+    }
 
     @ApiOperation(notes = "Add a new season",
             value = "To add a new season")
@@ -198,19 +208,29 @@ public class SeasonController {
         WebhookResponse response = null;
         log.debug("request:"+request);
         try {
-            WebhookRequest request1 = WebhookRequest.parseFrom(request.getBytes());
-            if(request1!=null){
-                QueryResult result = request1.getQueryResult();
-                String action = result.getAction();
-                if(action.equals("SeasonResults")){
-                    WebhookResponse.Builder builder = WebhookResponse.newBuilder();
-                    builder.addFulfillmentMessages(
-                            Intent.Message.newBuilder().setText(Intent.Message.Text.newBuilder().addText("gfhgfhfh").build()).build());
+            WebhookRequest.Builder builder = WebhookRequest.newBuilder();
+            JsonFormat.parser().merge(request,builder);
+            WebhookRequest request2 = builder.build();
 
-                    response = builder.build();
+            if(request2!=null){
+                QueryResult result = request2.getQueryResult();
+                String action = result.getAction();
+
+                WebhookResponse.Builder responseBuilder = WebhookResponse.newBuilder();
+                responseBuilder.setFulfillmentText("Acknowledged the message");
+                responseBuilder.addFulfillmentMessages(
+                        Intent.Message.newBuilder().setText(Intent.Message.Text.newBuilder().addText("gfhgfhfh").build()).build());
+
+                response = responseBuilder.build();
+                if(action.equals("SeasonResults")){
+
+                }else{
+
                 }
             }
         }catch (InvalidProtocolBufferException e){
+            e.printStackTrace();
+        }catch (IOException e){
             e.printStackTrace();
         }
 
@@ -220,4 +240,67 @@ public class SeasonController {
 
         return response;
     }
+
+
+    public static void main(String[] args) {
+
+        String request = " {\n" +
+                "  \"responseId\": \"ea3d77e8-ae27-41a4-9e1d-174bd461b68c\",\n" +
+                "  \"session\": \"projects/your-agents-project-id/agent/sessions/88d13aa8-2999-4f71-b233-39cbf3a824a0\",\n" +
+                "  \"queryResult\": {\n" +
+                "    \"queryText\": \"user's original query to your agent\",\n" +
+                "    \"parameters\": {\n" +
+                "      \"param\": \"param value\"\n" +
+                "    },\n" +
+                "    \"allRequiredParamsPresent\": true,\n" +
+                "    \"fulfillmentText\": \"Text defined in Dialogflows console for the intent that was matched\",\n" +
+                "    \"fulfillmentMessages\": [\n" +
+                "      {\n" +
+                "        \"text\": {\n" +
+                "          \"text\": [\n" +
+                "            \"Text defined in Dialogflows console for the intent that was matched\"\n" +
+                "          ]\n" +
+                "        }\n" +
+                "      }\n" +
+                "    ],\n" +
+                "    \"outputContexts\": [\n" +
+                "      {\n" +
+                "        \"name\": \"projects/your-agents-project-id/agent/sessions/88d13aa8-2999-4f71-b233-39cbf3a824a0/contexts/generic\",\n" +
+                "        \"lifespanCount\": 5,\n" +
+                "        \"parameters\": {\n" +
+                "          \"param\": \"param value\"\n" +
+                "        }\n" +
+                "      }\n" +
+                "    ],\n" +
+                "    \"intent\": {\n" +
+                "      \"name\": \"projects/your-agents-project-id/agent/intents/29bcd7f8-f717-4261-a8fd-2d3e451b8af8\",\n" +
+                "      \"displayName\": \"Matched Intent Name\"\n" +
+                "    },\n" +
+                "    \"intentDetectionConfidence\": 1,\n" +
+                "    \"diagnosticInfo\": {},\n" +
+                "    \"languageCode\": \"en\"\n" +
+                "  },\n" +
+                "  \"originalDetectIntentRequest\": {}\n" +
+                "}";
+
+        InputStream stream  = new ByteArrayInputStream(request.getBytes(StandardCharsets.US_ASCII));
+//        WebhookRequest request1 = WebhookRequest.(request.getBytes());
+        try {
+            WebhookRequest.Builder builder = WebhookRequest.newBuilder();
+            JsonFormat.parser().merge(request,builder);
+            WebhookRequest request2 = builder.build();
+            System.out.println("Req:"+request2);
+//            builder.mergeFrom(stream);
+            WebhookResponse.Builder responseBuilder = WebhookResponse.newBuilder();
+            responseBuilder.addFulfillmentMessages(
+                    Intent.Message.newBuilder().setText(Intent.Message.Text.newBuilder().addText("gfhgfhfh").build()).build());
+
+            WebhookResponse response = responseBuilder.build();
+            System.out.println(gsonStatic.toJson(response));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
 }
