@@ -18,8 +18,9 @@ public class WebhookResponseSerializer extends StdSerializer<WebhookResponse> {
 
     @Override
     public void serialize(WebhookResponse webhookResponse, JsonGenerator jsonGenerator, SerializerProvider serializerProvider) throws IOException {
-
-        jsonGenerator.writeObject(JsonFormat.printer().print(webhookResponse));
+        String json= JsonFormat.printer().print(webhookResponse);
+        jsonGenerator.writeRaw(json);
+//        jsonGenerator.();
 
     }
 }
