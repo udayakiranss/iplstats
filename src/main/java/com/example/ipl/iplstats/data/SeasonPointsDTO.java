@@ -1,6 +1,7 @@
 package com.example.ipl.iplstats.data;
 
 import lombok.Data;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -10,10 +11,13 @@ import java.util.Set;
 @Component
 @Data
 @Slf4j
+@ToString
 public class SeasonPointsDTO {
 
-    private String season;
+    private int season;
 
     private Set<SeasonTeamPointsDTO> teams = new HashSet<SeasonTeamPointsDTO>();
+
+    private String winner;
 
 }

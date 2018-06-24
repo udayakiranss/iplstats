@@ -23,7 +23,7 @@ import java.util.*;
 @Component
 @Slf4j
 public class IPLDataLoader {
-
+    @Getter
     private Set<MatchesDTO> matches=new HashSet<MatchesDTO>();
     @Getter
     private Set<Season> seasons = new HashSet<Season>();

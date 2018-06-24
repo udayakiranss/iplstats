@@ -1,9 +1,6 @@
 package com.example.ipl.iplstats.data;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -11,6 +8,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Data
 @EqualsAndHashCode(of = "teamName")
+@ToString(of={"teamaName,points"})
 @NoArgsConstructor
 public class SeasonTeamPointsDTO {
 
@@ -27,8 +25,15 @@ public class SeasonTeamPointsDTO {
     }
 
 
-    public void incrementMatches(){
-        totalMatchesPlayed+=1;
+    public boolean incrementMatches(){
+        boolean leagueMatch=false;
+        if(totalMatchesPlayed !=14) {
+            totalMatchesPlayed += 1;
+            leagueMatch = true;
+        }else{
+            log.debug(teamName + " is playing a playoff match or final");
+        }
+        return leagueMatch;
     }
 
 
@@ -38,7 +43,7 @@ public class SeasonTeamPointsDTO {
 
 
     public void addPoints(int points){
-        if(points == 2){
+        if(totalMatchesPlayed != 8 && points == 2){
             wonMatches+=1;
         }else if(points == 1){
             noResultMatches+=1;

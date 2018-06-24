@@ -21,6 +21,8 @@ import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpHeaders;
@@ -192,12 +194,14 @@ public class SeasonController {
         try {
             SeasonPointsDTO pointsDTO=seasonService.fetchPointsTable(seasonDTO);
             responseDTO.setResponse(pointsDTO);
+            log.debug("PointsDTO:"+pointsDTO);
         } catch (IPLStatException e) {
 
             responseDTO.setErrorCode(e.getErrorCode());
             responseDTO.setError(true);
             responseDTO.setErrorMessage(e.getMessage());
         }
+
         return responseDTO;
     }
 
@@ -214,19 +218,30 @@ public class SeasonController {
 
             if(request!=null){
                 QueryResult result = request.getQueryResult();
-                String action = result.getAction();
-
                 WebhookResponse.Builder responseBuilder = WebhookResponse.newBuilder();
                 responseBuilder.setFulfillmentText("Acknowledged the message");
-                responseBuilder.addFulfillmentMessages(
-                        Intent.Message.newBuilder().setText(Intent.Message.Text.newBuilder().addText("gfhgfhfh").build()).build());
 
-                response = responseBuilder.build();
-                if(action.equals("SeasonResults")){
+                if(request.getQueryResult().getAllRequiredParamsPresent()) {
+                    Struct parameters = result.getParameters();
 
-                }else{
+                    Map<String, Value> fieldsMap = parameters.getFieldsMap();
+                    Value seasonValue = fieldsMap.get("Season");
+                    int year = new Integer(
+                            seasonValue.getStringValue());
+                    SeasonDTO seasonDTO = new SeasonDTO();
+                    seasonDTO.setYear(year);
+                    RestResponse<SeasonPointsDTO> response1 = fetchPointsTable(seasonDTO);
+                    SeasonPointsDTO pointsDTO = response1.getResponse();
+
+                    String text = pointsDTO.getWinner() + " Won the championship for season "
+                            + pointsDTO.getSeason();
+                    responseBuilder.addFulfillmentMessages(
+                            Intent.Message.newBuilder().setText(Intent.Message.Text.newBuilder().addText(text).build()).build());
 
                 }
+                response = responseBuilder.build();
+
+
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -298,6 +313,15 @@ public class SeasonController {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+    }
+
+
+    @EventListener
+    public void appReady(ApplicationReadyEvent event) {
+
+        RestResponse<String> response =loadData();
+        log.debug(response.getResponse());
 
     }
 

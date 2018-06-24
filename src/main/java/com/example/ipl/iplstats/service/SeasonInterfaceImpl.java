@@ -100,6 +100,17 @@ public class SeasonInterfaceImpl implements SeasonInterface {
         Iterable<MatchSummary> summaries = dataLoader.getSummaryList();
         matchDAO.save(summaries);
 
+        // Populate
+
+        Set<MatchesDTO> matches = dataLoader.getMatches();
+
+        matches.forEach(matchesDTO -> {
+
+
+
+
+        });
+
     }
 
     @Transactional
@@ -116,18 +127,22 @@ public class SeasonInterfaceImpl implements SeasonInterface {
         SeasonPointsDTO pointsDTO = new SeasonPointsDTO();
 
 
-        String year = String.valueOf(seasonDTO.getYear());
+        int year = seasonDTO.getYear();
         pointsDTO.setSeason(year);
 
-        Season season = seasonRepo.findByYear(year);
+        Season season = seasonRepo.findByYear(String.valueOf(year));
         if(season == null){
             throw new IPLStatException("IPL2","Not a valid season");
         }
         Set<MatchSummary> summaries = matchDAO.findBySeason(season);
 
         if(summaries!=null && summaries.size() > 0){
-            summaries.forEach(matchSummary -> {
-
+            int matchCounter=0;
+            for(MatchSummary matchSummary:summaries){
+                matchCounter++;
+                if(matchCounter == summaries.size()){
+                    pointsDTO.setWinner(matchSummary.getWinner().getName());
+                }
                 SeasonTeamPointsDTO teamAPointsDTO = new SeasonTeamPointsDTO(matchSummary.getTeamA().getName());
                 teamPoints.add(teamAPointsDTO);
                 SeasonTeamPointsDTO teamBPointsDTO = new SeasonTeamPointsDTO(matchSummary.getTeamB().getName());
@@ -140,21 +155,25 @@ public class SeasonInterfaceImpl implements SeasonInterface {
                         SeasonTeamPointsDTO next = teamPointsDTOIterator.next();
                         if(result!=null && next.getTeamName().equals(matchSummary.getTeamA().getName())
                                 || next.getTeamName().equals(matchSummary.getTeamB().getName())){
-                            next.incrementMatches();
-                            if((result.equals(MatchResult.NORMAL.getResult())
-                                    ||result.equals(MatchResult.TIE.getResult())) &&
-                                    next.getTeamName().equals(matchSummary.getWinner().getName())) {
-                                next.addPoints(2);
-                            }else if(result.equals(MatchResult.NO_RESULT.getResult())) {
-                                next.addPoints(1);
+                            boolean success = next.incrementMatches();
+                            if(success){
+                                if((result.equals(MatchResult.NORMAL.getResult())
+                                        ||result.equals(MatchResult.TIE.getResult())) &&
+                                        next.getTeamName().equals(matchSummary.getWinner().getName())) {
+                                    next.addPoints(2);
+                                }else if(result.equals(MatchResult.NO_RESULT.getResult())) {
+                                    next.addPoints(1);
+                                }
                             }
-
                         }
 
                     }
                 }
-
-            });
+            }
+//            summaries.forEach(matchSummary -> {
+//
+//
+//            });
             pointsDTO.setTeams(teamPoints);
         }else{
             throw new IPLStatException("IPL2","Not a valid season");

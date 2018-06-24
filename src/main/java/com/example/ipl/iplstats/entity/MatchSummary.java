@@ -32,6 +32,7 @@ public class MatchSummary {
     private int winByRuns;
     private int winByWickets;
 
+
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name="season_id")
     private Season season;
