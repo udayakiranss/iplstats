@@ -60,6 +60,8 @@ public class SeasonController {
 
     private static Gson gsonStatic ;
 
+    private Map<SeasonDTO, SeasonStatisticsDTO> seasonStatisticsDTOMap = new HashMap<SeasonDTO, SeasonStatisticsDTO>();
+
     @PostConstruct
     public void init() {
         SeasonController.gsonStatic = gson;
@@ -225,8 +227,7 @@ public class SeasonController {
                     int year = new Integer(seasonValue.getStringValue());
                     SeasonDTO seasonDTO = new SeasonDTO();
                     seasonDTO.setYear(year);
-                    RestResponse<SeasonStatisticsDTO> response1 = fetchPointsTable(seasonDTO);
-                    SeasonStatisticsDTO pointsDTO = response1.getResponse();
+                    SeasonStatisticsDTO pointsDTO = seasonStatisticsDTOMap.get(seasonDTO);
                     String winner = pointsDTO.getWinner();
                     String loser = pointsDTO.getLoser();
                     String mom = pointsDTO.getPlayerOfMatch();
@@ -257,12 +258,33 @@ public class SeasonController {
         }
 
 
-
-
-
         return response;
     }
 
+
+
+    @EventListener
+    public void appReady(ApplicationReadyEvent event) {
+
+        RestResponse<String> response =loadData();
+//        log.debug(response.getResponse());
+
+        try {
+            List<SeasonDTO> seasonDTOList = seasonService.getSeasons();
+            seasonDTOList.forEach(seasonDTO -> {
+                try {
+                    SeasonStatisticsDTO seasonStatisticsDTO = seasonService.fetchPointsTable(seasonDTO);
+                    seasonStatisticsDTOMap.put(seasonDTO,seasonStatisticsDTO);
+                } catch (IPLStatException e) {
+                    e.printStackTrace();
+                }
+            });
+
+        } catch (IPLStatException e) {
+            e.printStackTrace();
+        }
+
+    }
 
     public static void main(String[] args) {
 
@@ -322,15 +344,6 @@ public class SeasonController {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-    }
-
-
-    @EventListener
-    public void appReady(ApplicationReadyEvent event) {
-
-        RestResponse<String> response =loadData();
-        log.debug(response.getResponse());
 
     }
 
