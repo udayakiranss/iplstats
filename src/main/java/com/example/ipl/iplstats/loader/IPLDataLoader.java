@@ -153,12 +153,14 @@ public class IPLDataLoader {
         Team teamB = getTeam(match.getTeam2());
         Team tossWinner = getTeam(match.getToss_winner());
         Team winner = getTeam(match.getWinner());
+        String playerOfMatch = match.getPlayer_of_match();
 
         MatchSummary matSummary = new MatchSummary(match.getId(),match.getCity(),match.getVenue(),teamA,
                 teamB,tossWinner,
                 match.getToss_decision(),winner,match.getWin_by_runs(),match.getWin_by_wickets());
 
         matSummary.setResult(match.getResult());
+        matSummary.setPlayerOfMatch(playerOfMatch);
 
         matSummary.setDate(match.getDate());
         matSummary.setSeason(season);

@@ -1,19 +1,27 @@
 package com.example.ipl.iplstats.data;
 
-import lombok.*;
+import lombok.Data;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-@Getter
-@Setter
+import java.util.HashSet;
+import java.util.Set;
+
+@Component
+@Data
+@Slf4j
 @ToString
-@EqualsAndHashCode(of ="year")
-@NoArgsConstructor
-@AllArgsConstructor
 public class SeasonStatisticsDTO {
 
-    private int year;
+    private int season;
+
+    private Set<SeasonTeamPointsDTO> teams = new HashSet<SeasonTeamPointsDTO>();
+
     private String winner;
-    private SeasonPointsDTO pointsDTO;
+
+    private String playerOfMatch;
+
+    private String loser;
 
 }

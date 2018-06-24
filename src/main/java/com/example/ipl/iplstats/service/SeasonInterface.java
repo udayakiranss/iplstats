@@ -1,11 +1,9 @@
 package com.example.ipl.iplstats.service;
 
 import com.example.ipl.iplstats.data.SeasonDTO;
-import com.example.ipl.iplstats.data.SeasonPointsDTO;
-import com.example.ipl.iplstats.entity.Season;
+import com.example.ipl.iplstats.data.SeasonStatisticsDTO;
 import com.example.ipl.iplstats.exception.IPLStatException;
 
-import java.io.File;
 import java.util.List;
 
 public interface SeasonInterface {
@@ -18,7 +16,7 @@ public interface SeasonInterface {
 
     void loadMatches(String file) throws  IPLStatException;
 
-    SeasonPointsDTO fetchPointsTable(SeasonDTO seasonDTO) throws  IPLStatException;
+    SeasonStatisticsDTO fetchPointsTable(SeasonDTO seasonDTO) throws  IPLStatException;
 
 
 }

@@ -2,24 +2,20 @@ package com.example.ipl.iplstats.controller;
 
 
 import com.example.ipl.iplstats.data.SeasonDTO;
-import com.example.ipl.iplstats.data.SeasonPointsDTO;
+import com.example.ipl.iplstats.data.SeasonStatisticsDTO;
 import com.example.ipl.iplstats.exception.IPLStatException;
 import com.example.ipl.iplstats.service.SeasonInterface;
 import com.example.ipl.iplstats.util.RestResponse;
-import com.example.ipl.iplstats.utility.SeasonLoader;
 import com.google.cloud.dialogflow.v2.Intent;
 import com.google.cloud.dialogflow.v2.QueryResult;
 import com.google.cloud.dialogflow.v2.WebhookRequest;
 import com.google.cloud.dialogflow.v2.WebhookResponse;
 import com.google.gson.Gson;
-import com.google.protobuf.InvalidProtocolBufferException;
-import com.google.protobuf.Message;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
 import com.google.protobuf.util.JsonFormat;
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
@@ -29,7 +25,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.FileCopyUtils;
-import org.springframework.util.ResourceUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
@@ -37,7 +32,6 @@ import springfox.documentation.annotations.ApiIgnore;
 import javax.annotation.PostConstruct;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.security.Principal;
 import java.util.HashMap;
 import java.util.List;
@@ -189,10 +183,10 @@ public class SeasonController {
     @ApiResponses(value = {
             @ApiResponse(code = 415, message = "Content type not supported.")
     })
-    public RestResponse<SeasonPointsDTO> fetchPointsTable(@RequestBody SeasonDTO seasonDTO){
-        RestResponse<SeasonPointsDTO> responseDTO = new RestResponse<>();
+    public RestResponse<SeasonStatisticsDTO> fetchPointsTable(@RequestBody SeasonDTO seasonDTO){
+        RestResponse<SeasonStatisticsDTO> responseDTO = new RestResponse<>();
         try {
-            SeasonPointsDTO pointsDTO=seasonService.fetchPointsTable(seasonDTO);
+            SeasonStatisticsDTO pointsDTO=seasonService.fetchPointsTable(seasonDTO);
             responseDTO.setResponse(pointsDTO);
             log.debug("PointsDTO:"+pointsDTO);
         } catch (IPLStatException e) {
@@ -217,26 +211,41 @@ public class SeasonController {
 //            WebhookRequest request2 = builder.build();
 
             if(request!=null){
-                QueryResult result = request.getQueryResult();
+                QueryResult queryResult = request.getQueryResult();
                 WebhookResponse.Builder responseBuilder = WebhookResponse.newBuilder();
                 responseBuilder.setFulfillmentText("Acknowledged the message");
 
                 if(request.getQueryResult().getAllRequiredParamsPresent()) {
-                    Struct parameters = result.getParameters();
+                    Struct parameters = queryResult.getParameters();
 
                     Map<String, Value> fieldsMap = parameters.getFieldsMap();
                     Value seasonValue = fieldsMap.get("Season");
-                    int year = new Integer(
-                            seasonValue.getStringValue());
+                    Value statistics =  fieldsMap.get("Statistics");
+                    Value result = fieldsMap.get("Result");
+                    int year = new Integer(seasonValue.getStringValue());
                     SeasonDTO seasonDTO = new SeasonDTO();
                     seasonDTO.setYear(year);
-                    RestResponse<SeasonPointsDTO> response1 = fetchPointsTable(seasonDTO);
-                    SeasonPointsDTO pointsDTO = response1.getResponse();
+                    RestResponse<SeasonStatisticsDTO> response1 = fetchPointsTable(seasonDTO);
+                    SeasonStatisticsDTO pointsDTO = response1.getResponse();
+                    String winner = pointsDTO.getWinner();
+                    String loser = pointsDTO.getLoser();
+                    String mom = pointsDTO.getPlayerOfMatch();
+                    String responseText="";
+                    if(result!=null && result.getStringValue().length() > 0 ){
+                        if(result.getStringValue().equals("won")){
+                            responseText = winner + " won the championship for season "
+                                    + pointsDTO.getSeason();
+                        }else if(result.getStringValue().equals("lost")){
+                            responseText = loser + " lost the championship for season "
+                                    + pointsDTO.getSeason();
+                        }
 
-                    String text = pointsDTO.getWinner() + " Won the championship for season "
-                            + pointsDTO.getSeason();
+                    }else if(statistics.getStringValue().equals("Mom")){
+                        responseText = mom + " was man of the match in finals of season " + year;
+                    }
+
                     responseBuilder.addFulfillmentMessages(
-                            Intent.Message.newBuilder().setText(Intent.Message.Text.newBuilder().addText(text).build()).build());
+                            Intent.Message.newBuilder().setText(Intent.Message.Text.newBuilder().addText(responseText).build()).build());
 
                 }
                 response = responseBuilder.build();

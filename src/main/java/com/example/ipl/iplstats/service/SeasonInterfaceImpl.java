@@ -9,18 +9,13 @@ import com.example.ipl.iplstats.entity.*;
 import com.example.ipl.iplstats.exception.IPLStatException;
 import com.example.ipl.iplstats.loader.IPLDataLoader;
 import com.example.ipl.iplstats.mapper.SeasonMapper;
-import com.example.ipl.iplstats.utility.SeasonLoader;
 import lombok.Getter;
-import lombok.extern.java.Log;
 import lombok.extern.slf4j.Slf4j;
 import org.mapstruct.factory.Mappers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Isolation;
 
-import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
-import java.io.File;
 import java.util.*;
 
 @Component
@@ -123,8 +118,8 @@ public class SeasonInterfaceImpl implements SeasonInterface {
 
     }
 
-    public SeasonPointsDTO fetchPointsTable(SeasonDTO seasonDTO)throws IPLStatException{
-        SeasonPointsDTO pointsDTO = new SeasonPointsDTO();
+    public SeasonStatisticsDTO fetchPointsTable(SeasonDTO seasonDTO)throws IPLStatException{
+        SeasonStatisticsDTO pointsDTO = new SeasonStatisticsDTO();
 
 
         int year = seasonDTO.getYear();
@@ -142,6 +137,13 @@ public class SeasonInterfaceImpl implements SeasonInterface {
                 matchCounter++;
                 if(matchCounter == summaries.size()){
                     pointsDTO.setWinner(matchSummary.getWinner().getName());
+                    pointsDTO.setPlayerOfMatch(matchSummary.getPlayerOfMatch());
+                    if(matchSummary.getTeamB().getName().equals(matchSummary.getWinner().getName())){
+                        pointsDTO.setLoser(matchSummary.getTeamA().getName());
+                    }else{
+                        pointsDTO.setLoser(matchSummary.getTeamB().getName());
+                    }
+
                 }
                 SeasonTeamPointsDTO teamAPointsDTO = new SeasonTeamPointsDTO(matchSummary.getTeamA().getName());
                 teamPoints.add(teamAPointsDTO);

@@ -31,6 +31,7 @@ public class MatchSummary {
     private Team winner;
     private int winByRuns;
     private int winByWickets;
+    private String playerOfMatch;
 
 
     @ManyToOne(cascade = CascadeType.ALL)
