@@ -249,6 +249,7 @@ public class SeasonController {
                             Intent.Message.newBuilder().setText(Intent.Message.Text.newBuilder().addText(responseText).build()).build());
 
                 }
+                responseBuilder.addAllOutputContexts(queryResult.getOutputContextsList());
                 response = responseBuilder.build();
 
 
