@@ -30,6 +30,8 @@ public class IPLDataLoader {
     @Getter
     private Set<Team> teams = new HashSet<Team>();
     @Getter
+    private Set<Player> players = new HashSet<Player>();
+    @Getter
     private List<MatchSummary> summaryList = new ArrayList<MatchSummary>();
 
     private Set<DeliveryDetailsDTO> deliveryInfoList=new HashSet<DeliveryDetailsDTO>();
@@ -71,11 +73,34 @@ public class IPLDataLoader {
             DeliveryMapper mapper = Mappers.getMapper(DeliveryMapper.class);
 
             deliveryInfoList.forEach(deliveryDetails-> {
+                String batsman = deliveryDetails.getBatsman();
+                String nonStriker = deliveryDetails.getNon_striker();
+                String bowler = deliveryDetails.getBowler();
+                String runs= deliveryDetails.getBatsman_runs();
+                String dismissalType = deliveryDetails.getDismissal_kind();
 
                 MatchSummary summary = matchDAO.getOne(new Long(deliveryDetails.getMatch_id()));
                 if(summary!=null){
+                    Season season = summary.getSeason();
+                    Team battingTeam = null;
+                    Team fieldingTeam = null;
+                    if(summary.getTeamA().getName().equals(deliveryDetails.getBatting_team())){
+                        battingTeam = summary.getTeamA();
+                        fieldingTeam = summary.getTeamB();
+                    }else{
+                        battingTeam = summary.getTeamB();
+                        fieldingTeam = summary.getTeamA();
+                    }
+
+
                     MatchDetails matchDetails =  mapper.deliveriesToMatchDetails(deliveryDetails);
                     matchDetails.setMatchSummary(summary);
+                    matchDetails.setBatsman(getPlayer(batsman,Integer.parseInt(runs),dismissalType,season,battingTeam));
+                    matchDetails.setNonStriker(getPlayer(nonStriker,0,dismissalType,season,battingTeam));
+                    matchDetails.setBowler(getPlayer(bowler,Integer.parseInt(runs),dismissalType,season,fieldingTeam));
+                    matchDetails.setFielder(getPlayer(deliveryDetails.getFielder(),0,dismissalType,season,fieldingTeam));
+                    matchDetails.setPlayerDismissed(getPlayer(
+                            deliveryDetails.getPlayer_dismissed(),0,dismissalType,season,battingTeam));
                     detailsList.add(matchDetails);
                 }
 
@@ -88,6 +113,33 @@ public class IPLDataLoader {
         }
         return deliveryInfoList;
 
+    }
+
+
+
+
+    private Player getPlayer(String name,int runs, String dismissalKind, Season season,Team team) {
+        Player player = null;
+        boolean found = false;
+        Iterator<Player> playerIterator = players.iterator();
+        while(playerIterator.hasNext()){
+            player = playerIterator.next();
+            if(player.getName().equals(name) &&  player.getSeason().equals(season) &&
+                    player.getTeam().equals(team)){
+                found = true;
+                break;
+            }
+        }
+
+        if(!found && name.length()>0){
+            player = new Player();
+            player.setName(name);
+            player.setSeason(season);
+            player.setTeam(team);
+            players.add(player);
+        }
+        player.addRuns(runs);
+        return player;
     }
 
 

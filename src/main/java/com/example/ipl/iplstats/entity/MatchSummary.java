@@ -9,6 +9,7 @@ import java.util.Date;
 @Entity
 @Data
 @NoArgsConstructor
+@Table(name = "MATCH_SUMMARY")
 public class MatchSummary {
     @Id
     private Long matchID;

@@ -8,6 +8,7 @@ import javax.persistence.*;
 @Component
 @Entity
 @Data
+@Table(name = "MATCH_DETAILS")
 public class MatchDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -18,9 +19,15 @@ public class MatchDetails {
     private  String bowlingTeam;
     private int over;
     private int ball;
-    private String batsman;
-    private String nonStriker;
-    private String bowler;
+    @ManyToOne
+    @JoinColumn(name="batsman")
+    private Player batsman;
+    @ManyToOne
+    @JoinColumn(name="nonStriker")
+    private Player nonStriker;
+    @ManyToOne
+    @JoinColumn(name="bowler")
+    private Player bowler;
     private boolean isSuperOver;
     private int wideRuns;
     private int byeRuns;
@@ -30,9 +37,13 @@ public class MatchDetails {
     private int batsmanRuns;
     private int extraRuns;
     private int totalRuns;
-    private String playerDismissed;
+    @ManyToOne
+    @JoinColumn(name="playerDismissed")
+    private Player playerDismissed;
     private String dismissalKind;
-    private String fielder;
+    @ManyToOne
+    @JoinColumn(name="fielder")
+    private Player fielder;
     @ManyToOne
     @JoinColumn(name = "match_summary_id")
     private MatchSummary matchSummary;

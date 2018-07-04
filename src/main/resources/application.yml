@@ -18,7 +18,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:h2:./db/testDb;AUTO_SERVER=TRUE
+    url: jdbc:h2:./db/test5Db;AUTO_SERVER=TRUE;MVCC=TRUE;IFEXISTS=FALSE
   h2:
   console:
     enabled: true
@@ -28,8 +28,8 @@ spring:
       hibernate:
         generate_statistics: true
         format_sql: true
-        ddl-auto: create-drop
-    show-sql: true
+        ddl-auto: none
+    show-sql: false
 
 
 
@@ -38,7 +38,7 @@ logging:
     org:
       hibernate:
         stat: debug
-        type: trace
+        type: debug
       springframework:
         security: DEBUG
     com:
@@ -49,6 +49,7 @@ logging:
       console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
       file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
   file: /Users/udaykiranss/Code/Logs/application.log
+
 
 
 

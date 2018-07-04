@@ -1,0 +1,315 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1
+      author: udaykiranss
+      changes:
+        - createTable:
+            tableName: SEASON
+            columns:
+              - column:
+                  name: ID
+                  type: BIGINT(19)
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: DESCRIPTION
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: YEAR
+                  type: varchar(255)
+                  constraints:
+                    nullable: false
+        - createTable:
+              tableName: TEAM
+              columns:
+                - column:
+                    name: ID
+                    type: BIGINT(19)
+                    constraints:
+                      primaryKey: true
+                      nullable: false
+                - column:
+                    name: YEAR
+                    type: varchar(255)
+                    constraints:
+                      nullable: false
+                      unique: true
+        - createTable:
+                tableName: SEASON_TEAM
+                columns:
+                    - column:
+                        name: SEASON_ID
+                        type: BIGINT(19)
+                        constraints:
+                          primaryKey: true
+                          nullable: false
+                          references: SEASON(ID)
+                          foreignKeyName: FK_SEASON_ID
+                    - column:
+                        name: TEAM_ID
+                        type: BIGINT(19)
+                        constraints:
+                          primaryKey: true
+                          nullable: false
+                          references: TEAM(ID)
+                          foreignKeyName: FK_TEAM_ID
+        - createTable:
+                tableName: MATCH_SUMMARY
+                columns:
+                    - column:
+                        name: MATCHID
+                        type: BIGINT(19)
+                        constraints:
+                          primaryKey: true
+                          nullable: false
+                    - column:
+                        name: TEAMA
+                        type: BIGINT(19)
+                        constraints:
+                          nullable: false
+                          references: TEAM(ID)
+                          foreignKeyName: FK_TEAMA_TEAM
+                    - column:
+                          name: TEAMB
+                          type: BIGINT(19)
+                          constraints:
+                            nullable: false
+                            references: TEAM(ID)
+                            foreignKeyName: FK_TEAMB_TEAM
+                    - column:
+                        name: TOSS_WINNER
+                        type: BIGINT(19)
+                        constraints:
+                          nullable: false
+                          references: TEAM(ID)
+                          foreignKeyName: FK_TOSS_W_TEAM
+                    - column:
+                          name: WINNER
+                          type: BIGINT(19)
+                          constraints:
+                            nullable: false
+                            references: TEAM(ID)
+                            foreignKeyName: FK_WINNER_TEAM
+                    - column:
+                          name: CITY
+                          type: varchar(255)
+                          constraints:
+                            nullable: true
+                    - column:
+                          name: DATE
+                          type: TIMESTAMP(26,6)
+                          constraints:
+                            nullable: true
+                    - column:
+                          name: PLAYER_OF_MATCH
+                          type: varchar(255)
+                          constraints:
+                            nullable: true
+                    - column:
+                          name: RESULT
+                          type: varchar(255)
+                          constraints:
+                            nullable: true
+                    - column:
+                          name: TOSS_DECISION
+                          type: varchar(255)
+                          constraints:
+                            nullable: true
+                    - column:
+                          name: VENUE
+                          type: varchar(255)
+                          constraints:
+                            nullable: true
+                    - column:
+                          name: WIN_BY_RUNS
+                          type: INTEGER(10)
+                          constraints:
+                            nullable: true
+                    - column:
+                          name: WIN_BY_WICKETS
+                          type: INTEGER(10)
+                          constraints:
+                            nullable: true
+                    - column:
+                        name: SEASON_ID
+                        type: BIGINT(19)
+                        constraints:
+                          nullable: false
+                          references: SEASON(ID)
+                          foreignKeyName: FK_SUM_SEASON_ID
+        - createTable:
+              tableName: PLAYER
+              columns:
+                - column:
+                    name: ID
+                    type: BIGINT(19)
+                    constraints:
+                      primaryKey: true
+                      nullable: false
+                - column:
+                    name: NAME
+                    type: varchar(255)
+                    constraints:
+                      nullable: false
+                      unique: true
+                - column:
+                      name: NO_OF_MATCHES
+                      type: INTEGER(10)
+                      constraints:
+                        nullable: true
+                - column:
+                      name: TOTAL_RUNS
+                      type: INTEGER(10)
+                      constraints:
+                        nullable: true
+                - column:
+                      name: TOTAL_WICKETS
+                      type: INTEGER(10)
+                      constraints:
+                        nullable: true
+                - column:
+                    name: SEASON_ID
+                    type: BIGINT(19)
+                    constraints:
+                      primaryKey: true
+                      nullable: false
+                      references: SEASON(ID)
+                      foreignKeyName: FK_SEASON_PLAYER_ID
+
+        - createTable:
+                tableName: MATCH_DETAILS
+                columns:
+                    - column:
+                        name: ID
+                        type: BIGINT(19)
+                        constraints:
+                          primaryKey: true
+                          nullable: false
+                    - column:
+                          name: BALL
+                          type: INTEGER(10)
+                          constraints:
+                            nullable: false
+                    - column:
+                          name: BATSMAN_RUNS
+                          type: INTEGER(10)
+                          constraints:
+                            nullable: false
+                    - column:
+                          name: BATTING_TEAM
+                          type: varchar(255)
+                          constraints:
+                            nullable: true
+                    - column:
+                          name: BOWLER
+                          type: varchar(255)
+                          constraints:
+                            nullable: false
+                            references: PLAYER(ID)
+                            foreignKeyName: FK_BOWLER_PLAYER
+                    - column:
+                          name: BATSMAN
+                          type: varchar(255)
+                          constraints:
+                            nullable: false
+                            references: PLAYER(ID)
+                            foreignKeyName: FK_BATSMAN_PLAYER
+                    - column:
+                          name: BOWLING_TEAM
+                          type: varchar(255)
+                          constraints:
+                            nullable: true
+                    - column:
+                          name:  BYE_RUNS
+                          type: INTEGER(10)
+                          constraints:
+                            nullable: true
+                    - column:
+                          name: DISMISSAL_KIND
+                          type: varchar(255)
+                          constraints:
+                            nullable: true
+                    - column:
+                          name: EXTRA_RUNS
+                          type: INTEGER(10)
+                          constraints:
+                            nullable: true
+                    - column:
+                          name: FIELDER
+                          type: varchar(255)
+                          constraints:
+                            nullable: false
+                            references: PLAYER(ID)
+                            foreignKeyName: FK_FIELDER_PLAYER
+                    - column:
+                          name: INNINGS
+                          type: INTEGER(10)
+                          constraints:
+                            nullable: true
+                    - column:
+                          name: IS_SUPER_OVER
+                          type: boolean(1)
+                          constraints:
+                            nullable: true
+                    - column:
+                          name: LEGBYE_RUNS
+                          type: INTEGER(10)
+                          constraints:
+                            nullable: true
+                    - column:
+                          name: MATCHID
+                          type: BIGINT(19)
+                          constraints:
+                            nullable: false
+                    - column:
+                          name: NOBALL_RUNS
+                          type: INTEGER(10)
+                          constraints:
+                            nullable: true
+                    - column:
+                          name: NON_STRIKER
+                          type: varchar(255)
+                          constraints:
+                            nullable: false
+                            references: PLAYER(ID)
+                            foreignKeyName: FK_NS_PLAYER
+                    - column:
+                          name: OVER
+                          type: INTEGER(10)
+                          constraints:
+                            nullable: true
+                    - column:
+                          name: PENALTY_RUNS
+                          type: INTEGER(10)
+                          constraints:
+                            nullable: true
+                    - column:
+                          name: PLAYER_DISMISSED
+                          type: varchar(255)
+                          constraints:
+                            nullable: false
+                            references: PLAYER(ID)
+                            foreignKeyName: FK_DISMISSED_PLAYER
+                    - column:
+                          name: TOTAL_RUNS
+                          type: INTEGER(10)
+                          constraints:
+                            nullable: true
+                    - column:
+                          name: WIDE_RUNS
+                          type: INTEGER(10)
+                          constraints:
+                            nullable: true
+                    - column:
+                          name: MATCH_SUMMARY_ID
+                          type: INTEGER(10)
+                          constraints:
+                            nullable: true
+                            references: MATCH_SUMMARY(MATCHID)
+                            foreignKeyName: FK_MS_MATCH_ID
+
+
+

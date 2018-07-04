@@ -13,8 +13,10 @@ public class PlayerDTO {
 
     private Long id;
     private String name;
-    private int NoOfMatches;
+    private int noOfMatches;
     private int totalRuns;
     private int totalWickets;
+    private int season;
+    private String teamName;
 
 }

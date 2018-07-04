@@ -1,9 +1,11 @@
 package com.example.ipl.iplstats.controller;
 
 
+import com.example.ipl.iplstats.data.PlayerDTO;
 import com.example.ipl.iplstats.data.SeasonDTO;
 import com.example.ipl.iplstats.data.SeasonStatisticsDTO;
 import com.example.ipl.iplstats.exception.IPLStatException;
+import com.example.ipl.iplstats.service.PlayerInterface;
 import com.example.ipl.iplstats.service.SeasonInterface;
 import com.example.ipl.iplstats.util.RestResponse;
 import com.google.cloud.dialogflow.v2.Intent;
@@ -14,7 +16,10 @@ import com.google.gson.Gson;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
 import com.google.protobuf.util.JsonFormat;
-import io.swagger.annotations.*;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -30,12 +35,15 @@ import org.springframework.web.multipart.MultipartFile;
 import springfox.documentation.annotations.ApiIgnore;
 
 import javax.annotation.PostConstruct;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 @RestController
@@ -52,6 +60,8 @@ public class SeasonController {
 
     @Autowired
     private SeasonInterface seasonService;
+    @Autowired
+    private PlayerInterface playerInterface;
 
     @Autowired
     private ResourceLoader resourceLoader;
@@ -149,7 +159,7 @@ public class SeasonController {
         try {
 
             ClassPathResource cpr = new ClassPathResource("matches.csv");
-            ClassPathResource cprd = new ClassPathResource("deliveries-sample.csv");
+            ClassPathResource cprd = new ClassPathResource("deliveries.csv");
 
             byte[] matchData = FileCopyUtils.copyToByteArray(cpr.getInputStream());
             String matchContent = new String(matchData, StandardCharsets.UTF_8);
@@ -199,6 +209,53 @@ public class SeasonController {
         }
 
         return responseDTO;
+    }
+    @GetMapping(value = "/players/{season}/{playername}",consumes = "application/json")
+    public RestResponse<PlayerDTO> getPlayerInfo(@PathVariable int season,
+                                                   @PathVariable String playername){
+        RestResponse<PlayerDTO> restResponse= new RestResponse<>();
+        try {
+           PlayerDTO playerDTO= playerInterface.getPlayerInfo(playername,season);
+           restResponse.setResponse(playerDTO);
+        } catch (IPLStatException e) {
+            e.printStackTrace();
+            restResponse.setError(true);
+            restResponse.setErrorMessage(e.getMessage());
+            restResponse.setErrorCode(e.getErrorCode());
+        }
+        return restResponse;
+    }
+
+
+    @GetMapping(value = "/players/{playername}",consumes = "application/json")
+    public RestResponse<List<PlayerDTO>> getPlayers(@PathVariable String playername){
+        RestResponse<List<PlayerDTO>> restResponse= new RestResponse<>();
+        try {
+            List<PlayerDTO> playerDTOList= playerInterface.getPlayerInfo(playername);
+            restResponse.setResponse(playerDTOList);
+        } catch (IPLStatException e) {
+            e.printStackTrace();
+            restResponse.setError(true);
+            restResponse.setErrorMessage(e.getMessage());
+            restResponse.setErrorCode(e.getErrorCode());
+        }
+        return restResponse;
+    }
+
+    @GetMapping(value = "/players/team/{season}",consumes = "application/json")
+    public RestResponse<List<PlayerDTO>> getPlayers(@PathVariable int season,
+                                                    @RequestParam(value="team") String team){
+        RestResponse<List<PlayerDTO>> restResponse= new RestResponse<>();
+        try {
+            List<PlayerDTO> playerDTOList= playerInterface.getPlayerList(team,season);
+            restResponse.setResponse(playerDTOList);
+        } catch (IPLStatException e) {
+            e.printStackTrace();
+            restResponse.setError(true);
+            restResponse.setErrorMessage(e.getMessage());
+            restResponse.setErrorCode(e.getErrorCode());
+        }
+        return restResponse;
     }
 
     @PostMapping(value = "/chatbotaction", produces="application/json", consumes="application/json")
@@ -261,6 +318,9 @@ public class SeasonController {
 
         return response;
     }
+
+
+
 
 
 

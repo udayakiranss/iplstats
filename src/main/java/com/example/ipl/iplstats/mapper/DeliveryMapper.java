@@ -22,9 +22,9 @@ public interface DeliveryMapper {
             @Mapping(source = "deliveryDetailsDTO.bowling_team", target = "bowlingTeam"),
             @Mapping(source = "deliveryDetailsDTO.over", target = "over"),
             @Mapping(source = "deliveryDetailsDTO.ball", target = "ball"),
-            @Mapping(source = "deliveryDetailsDTO.batsman", target = "batsman"),
-            @Mapping(source = "deliveryDetailsDTO.non_striker", target = "nonStriker"),
-            @Mapping(source = "deliveryDetailsDTO.bowler", target = "bowler"),
+            @Mapping(source = "deliveryDetailsDTO.batsman", target = "batsman.name"),
+            @Mapping(source = "deliveryDetailsDTO.non_striker", target = "nonStriker.name"),
+            @Mapping(source = "deliveryDetailsDTO.bowler", target = "bowler.name"),
             @Mapping(source = "deliveryDetailsDTO.is_super_over", target = "superOver"),
             @Mapping(source = "deliveryDetailsDTO.wide_runs", target = "wideRuns"),
             @Mapping(source = "deliveryDetailsDTO.bye_runs", target = "byeRuns"),
@@ -34,9 +34,9 @@ public interface DeliveryMapper {
             @Mapping(source = "deliveryDetailsDTO.batsman_runs", target = "batsmanRuns"),
             @Mapping(source = "deliveryDetailsDTO.extra_runs", target = "extraRuns"),
             @Mapping(source = "deliveryDetailsDTO.total_runs", target = "totalRuns"),
-            @Mapping(source = "deliveryDetailsDTO.player_dismissed", target = "playerDismissed"),
+            @Mapping(source = "deliveryDetailsDTO.player_dismissed", target = "playerDismissed.name"),
             @Mapping(source = "deliveryDetailsDTO.dismissal_kind", target = "dismissalKind"),
-            @Mapping(source = "deliveryDetailsDTO.fielder", target = "fielder"),
+            @Mapping(source = "deliveryDetailsDTO.fielder", target = "fielder.name"),
 
     })
     MatchDetails deliveriesToMatchDetails(DeliveryDetailsDTO deliveryDetailsDTO);

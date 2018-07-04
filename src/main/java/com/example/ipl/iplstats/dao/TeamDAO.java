@@ -14,4 +14,6 @@ import java.util.Set;
 public interface TeamDAO extends JpaRepository<Team, Long> {
 
     Set<Team> findBySeason(Season season);
+
+    Team findBySeasonAndName(Season season, String name);
 }
