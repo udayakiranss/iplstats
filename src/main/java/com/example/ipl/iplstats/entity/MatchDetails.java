@@ -1,6 +1,9 @@
 package com.example.ipl.iplstats.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.*;
@@ -40,11 +43,42 @@ public class MatchDetails {
     @ManyToOne
     @JoinColumn(name="playerDismissed")
     private Player playerDismissed;
-    private String dismissalKind;
+    private DismissalKind dismissalKind;
     @ManyToOne
     @JoinColumn(name="fielder")
     private Player fielder;
     @ManyToOne
     @JoinColumn(name = "match_summary_id")
     private MatchSummary matchSummary;
+
+
+
+//    public String getDismissalKind(){
+//        return dismissalKind.getKind();
+//    }
+
+
+    public boolean isWicketToBowler(){
+        if(getDismissalKind()!=null && (getDismissalKind().equals(DismissalKind.BOWLED) ||
+                getDismissalKind().equals(DismissalKind.CAUGHT) ||
+                getDismissalKind().equals(DismissalKind.CAUGHT_BOWLED) ||
+                getDismissalKind().equals(DismissalKind.LBW) ||
+                getDismissalKind().equals(DismissalKind.HIT_WICKET) ||
+                getDismissalKind().equals(DismissalKind.STUMPED))){
+
+            return true;
+
+        }
+        return false;
+    }
+
+    public void setDismissalKind(String kind){
+        for (DismissalKind dKind : DismissalKind.values()) {
+            if(dKind.getKind().equals(kind)){
+                 dismissalKind=dKind;
+                 break;
+            }
+        }
+    }
+
 }

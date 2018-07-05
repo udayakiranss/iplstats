@@ -19,7 +19,7 @@ public class Season {
     private String year;
     private String description;
 
-    @ManyToMany(cascade = {CascadeType.ALL},fetch = FetchType.EAGER)
+    @ManyToMany(cascade = {CascadeType.ALL},fetch = FetchType.LAZY)
     @JoinTable(name = "season_team",
             joinColumns = @JoinColumn(name = "season_id"),
             inverseJoinColumns = @JoinColumn(name = "team_id"))

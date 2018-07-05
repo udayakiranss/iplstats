@@ -4,9 +4,11 @@ package com.example.ipl.iplstats.controller;
 import com.example.ipl.iplstats.data.PlayerDTO;
 import com.example.ipl.iplstats.data.SeasonDTO;
 import com.example.ipl.iplstats.data.SeasonStatisticsDTO;
+import com.example.ipl.iplstats.data.TeamDTO;
 import com.example.ipl.iplstats.exception.IPLStatException;
 import com.example.ipl.iplstats.service.PlayerInterface;
 import com.example.ipl.iplstats.service.SeasonInterface;
+import com.example.ipl.iplstats.service.TeamInterface;
 import com.example.ipl.iplstats.util.RestResponse;
 import com.google.cloud.dialogflow.v2.Intent;
 import com.google.cloud.dialogflow.v2.QueryResult;
@@ -41,9 +43,9 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 
 @RestController
@@ -59,10 +61,11 @@ public class SeasonController {
 
 
     @Autowired
-    private SeasonInterface seasonService;
+    private SeasonInterface seasonInterface;
     @Autowired
     private PlayerInterface playerInterface;
-
+    @Autowired
+    private TeamInterface teamInterface;
     @Autowired
     private ResourceLoader resourceLoader;
     @Autowired
@@ -85,7 +88,7 @@ public class SeasonController {
         RestResponse<Map<String, String>> response = new RestResponse<>();
         Map<String, String> responseMap = new HashMap<String,String>();
         try{
-            seasonService.addSeason(season);
+            seasonInterface.addSeason(season);
             responseMap.put("Season",season.getDescription());
             response.setResponse(responseMap);
             response.setError(false);
@@ -126,7 +129,7 @@ public class SeasonController {
 
         RestResponse<Map<String, List<SeasonDTO>>> response = new RestResponse<>();
         try{
-            List<SeasonDTO> seasons=seasonService.getSeasons();
+            List<SeasonDTO> seasons= seasonInterface.getSeasons();
             Map<String, List<SeasonDTO>> seasonMap= new HashMap<String, List<SeasonDTO>>();
             //seasons.forEach(season -> seasonMap.put(season.getYear(), season));
             seasonMap.put("SeasonList",seasons);
@@ -168,8 +171,8 @@ public class SeasonController {
             String deiveryContent = new String(deliveriesData, StandardCharsets.UTF_8);
 
 
-            seasonService.loadMatches(matchContent);
-            seasonService.loadDeliveryDetails(deiveryContent);
+            seasonInterface.loadMatches(matchContent);
+            seasonInterface.loadDeliveryDetails(deiveryContent);
             isLoadSuccessful = true;
             restResponse.setResponse("Loaded Successfully");
         }
@@ -198,7 +201,7 @@ public class SeasonController {
     public RestResponse<SeasonStatisticsDTO> fetchPointsTable(@RequestBody SeasonDTO seasonDTO){
         RestResponse<SeasonStatisticsDTO> responseDTO = new RestResponse<>();
         try {
-            SeasonStatisticsDTO pointsDTO=seasonService.fetchPointsTable(seasonDTO);
+            SeasonStatisticsDTO pointsDTO= seasonInterface.fetchPointsTable(seasonDTO);
             responseDTO.setResponse(pointsDTO);
             log.debug("PointsDTO:"+pointsDTO);
         } catch (IPLStatException e) {
@@ -210,13 +213,30 @@ public class SeasonController {
 
         return responseDTO;
     }
-    @GetMapping(value = "/players/{season}/{playername}",consumes = "application/json")
-    public RestResponse<PlayerDTO> getPlayerInfo(@PathVariable int season,
+    @GetMapping(value = "/season/{season}/player/{playername}",consumes = "application/json")
+    public RestResponse<SeasonDTO> getPlayerInfo(@PathVariable int season,
                                                    @PathVariable String playername){
-        RestResponse<PlayerDTO> restResponse= new RestResponse<>();
+        RestResponse<SeasonDTO> restResponse= new RestResponse<>();
         try {
-           PlayerDTO playerDTO= playerInterface.getPlayerInfo(playername,season);
-           restResponse.setResponse(playerDTO);
+            SeasonDTO seasonDTO = null;
+
+            List<PlayerDTO> playerDTOList= playerInterface.getPlayerInfo(playername,season);
+
+            if(playerDTOList!=null&&playerDTOList.size()>0){
+                seasonDTO = seasonInterface.getSeason(season);
+                TeamDTO teamDTO = teamInterface.getTeam(playerDTOList.get(0).getTeamName());
+                for(PlayerDTO playerDTO: playerDTOList){
+                    teamDTO.addPlayer(playerDTO);
+                    seasonDTO.addTeamDTO(teamDTO);
+                }
+
+            }else{
+                restResponse.setError(true);
+                restResponse.setErrorMessage("Not a valid Player");
+            }
+
+           restResponse.setResponse(seasonDTO);
+
         } catch (IPLStatException e) {
             e.printStackTrace();
             restResponse.setError(true);
@@ -227,7 +247,7 @@ public class SeasonController {
     }
 
 
-    @GetMapping(value = "/players/{playername}",consumes = "application/json")
+    @GetMapping(value = "/player/{playername}",consumes = "application/json")
     public RestResponse<List<PlayerDTO>> getPlayers(@PathVariable String playername){
         RestResponse<List<PlayerDTO>> restResponse= new RestResponse<>();
         try {
@@ -242,13 +262,21 @@ public class SeasonController {
         return restResponse;
     }
 
-    @GetMapping(value = "/players/team/{season}",consumes = "application/json")
-    public RestResponse<List<PlayerDTO>> getPlayers(@PathVariable int season,
-                                                    @RequestParam(value="team") String team){
-        RestResponse<List<PlayerDTO>> restResponse= new RestResponse<>();
+    @GetMapping(value = "/season/{season}/teams/{team}",consumes = "application/json")
+    public RestResponse<SeasonDTO> getPlayers(@PathVariable int season,
+                                                    @PathVariable String team){
+        RestResponse<SeasonDTO> restResponse= new RestResponse<>();
         try {
+
+            SeasonDTO seasonDTO = seasonInterface.getSeason(season);
+            TeamDTO teamDTO = teamInterface.getTeam(team);
             List<PlayerDTO> playerDTOList= playerInterface.getPlayerList(team,season);
-            restResponse.setResponse(playerDTOList);
+
+            teamDTO.setPlayerDTOList(new HashSet<>(playerDTOList));
+            seasonDTO.addTeamDTO(teamDTO);
+
+            restResponse.setResponse(seasonDTO);
+
         } catch (IPLStatException e) {
             e.printStackTrace();
             restResponse.setError(true);
@@ -281,6 +309,7 @@ public class SeasonController {
                     Value seasonValue = fieldsMap.get("Season");
                     Value statistics =  fieldsMap.get("Statistics");
                     Value result = fieldsMap.get("Result");
+                    Value player = fieldsMap.get("Player");
                     int year = new Integer(seasonValue.getStringValue());
                     SeasonDTO seasonDTO = new SeasonDTO();
                     seasonDTO.setYear(year);
@@ -331,10 +360,10 @@ public class SeasonController {
 //        log.debug(response.getResponse());
 
         try {
-            List<SeasonDTO> seasonDTOList = seasonService.getSeasons();
+            List<SeasonDTO> seasonDTOList = seasonInterface.getSeasons();
             seasonDTOList.forEach(seasonDTO -> {
                 try {
-                    SeasonStatisticsDTO seasonStatisticsDTO = seasonService.fetchPointsTable(seasonDTO);
+                    SeasonStatisticsDTO seasonStatisticsDTO = seasonInterface.fetchPointsTable(seasonDTO);
                     seasonStatisticsDTOMap.put(seasonDTO,seasonStatisticsDTO);
                 } catch (IPLStatException e) {
                     e.printStackTrace();

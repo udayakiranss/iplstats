@@ -2,12 +2,10 @@ package com.example.ipl.iplstats.loader;
 
 import com.example.ipl.iplstats.dao.MatchDAO;
 import com.example.ipl.iplstats.data.DeliveryDetailsDTO;
-import com.example.ipl.iplstats.data.MatchDetailsDTO;
 import com.example.ipl.iplstats.data.MatchesDTO;
 import com.example.ipl.iplstats.entity.*;
 import com.example.ipl.iplstats.exception.IPLStatException;
 import com.example.ipl.iplstats.mapper.DeliveryMapper;
-import com.example.ipl.iplstats.service.SeasonInterface;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.mapstruct.factory.Mappers;
@@ -16,7 +14,6 @@ import org.simpleflatmapper.csv.CsvParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
@@ -71,13 +68,13 @@ public class IPLDataLoader {
 
             log.debug("matches = " + deliveryInfoList.size());
             DeliveryMapper mapper = Mappers.getMapper(DeliveryMapper.class);
-
             deliveryInfoList.forEach(deliveryDetails-> {
                 String batsman = deliveryDetails.getBatsman();
                 String nonStriker = deliveryDetails.getNon_striker();
                 String bowler = deliveryDetails.getBowler();
                 String runs= deliveryDetails.getBatsman_runs();
-                String dismissalType = deliveryDetails.getDismissal_kind();
+
+                String matchId = deliveryDetails.getMatch_id();
 
                 MatchSummary summary = matchDAO.getOne(new Long(deliveryDetails.getMatch_id()));
                 if(summary!=null){
@@ -94,13 +91,17 @@ public class IPLDataLoader {
 
 
                     MatchDetails matchDetails =  mapper.deliveriesToMatchDetails(deliveryDetails);
+                    boolean dismissalType = matchDetails.isWicketToBowler();
                     matchDetails.setMatchSummary(summary);
-                    matchDetails.setBatsman(getPlayer(batsman,Integer.parseInt(runs),dismissalType,season,battingTeam));
-                    matchDetails.setNonStriker(getPlayer(nonStriker,0,dismissalType,season,battingTeam));
-                    matchDetails.setBowler(getPlayer(bowler,Integer.parseInt(runs),dismissalType,season,fieldingTeam));
-                    matchDetails.setFielder(getPlayer(deliveryDetails.getFielder(),0,dismissalType,season,fieldingTeam));
-                    matchDetails.setPlayerDismissed(getPlayer(
+                    matchDetails.setBatsman(getPlayer(matchId,batsman,Integer.parseInt(runs),dismissalType,season,battingTeam));
+                    matchDetails.setNonStriker(getPlayer(matchId,nonStriker,0,dismissalType,season,battingTeam));
+                    matchDetails.setBowler(getPlayer(matchId,bowler,Integer.parseInt(runs),dismissalType,season,fieldingTeam));
+                    matchDetails.setFielder(getPlayer(matchId,deliveryDetails.getFielder(),0,dismissalType,season,fieldingTeam));
+                    matchDetails.setPlayerDismissed(getPlayer(matchId,
                             deliveryDetails.getPlayer_dismissed(),0,dismissalType,season,battingTeam));
+
+
+
                     detailsList.add(matchDetails);
                 }
 
@@ -118,14 +119,17 @@ public class IPLDataLoader {
 
 
 
-    private Player getPlayer(String name,int runs, String dismissalKind, Season season,Team team) {
+    private Player getPlayer( String matchId,String name,int runs, boolean isWicketToBowler, Season season,Team team) {
         Player player = null;
         boolean found = false;
+
         Iterator<Player> playerIterator = players.iterator();
+
         while(playerIterator.hasNext()){
             player = playerIterator.next();
             if(player.getName().equals(name) &&  player.getSeason().equals(season) &&
                     player.getTeam().equals(team)){
+                player.addMatch(matchId);
                 found = true;
                 break;
             }
@@ -136,9 +140,13 @@ public class IPLDataLoader {
             player.setName(name);
             player.setSeason(season);
             player.setTeam(team);
+            player.addMatch(matchId);
             players.add(player);
         }
         player.addRuns(runs);
+        if(isWicketToBowler){
+            player.addWickets();
+        }
         return player;
     }
 

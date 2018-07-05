@@ -50,6 +50,8 @@ public class SeasonInterfaceImpl implements SeasonInterface {
     }
 
 
+
+
     @Override
     public List<SeasonDTO> getSeasons() throws IPLStatException {
         Iterable<Season> seasonPage = seasonRepo.findAll();
@@ -78,6 +80,20 @@ public class SeasonInterfaceImpl implements SeasonInterface {
         return  seasonDTOList;
     }
 
+    @Override
+    public SeasonDTO getSeason(int year) throws IPLStatException {
+        SeasonDTO seasonDTO = null;
+        if(year >= 2008 || year <2018){
+
+            Season season=seasonRepo.findByYear(String.valueOf(year));
+            seasonDTO=mapper.domainToDTO(season);
+
+        }else{
+            throw new IPLStatException("IPL1","Not a valid year for IPL");
+        }
+
+        return seasonDTO;
+    }
 
 
     @Transactional

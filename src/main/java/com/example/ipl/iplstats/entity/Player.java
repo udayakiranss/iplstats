@@ -6,6 +6,8 @@ import lombok.ToString;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Data
@@ -26,6 +28,8 @@ public class Player {
     @ManyToOne
     @JoinColumn(name="team_id")
     private Team team;
+    @Transient
+    private Set<String> matchSet=new HashSet<String>();
 
     public Player(String name) {
         this.name = name;
@@ -38,5 +42,15 @@ public class Player {
 
     public void addRuns(int runs){
         totalRuns+=runs;
+    }
+
+    public void addMatch(String  matchId){
+        matchSet.add(matchId);
+        noOfMatches=matchSet.size();
+    }
+
+
+    public void addWickets() {
+        totalWickets+=1;
     }
 }

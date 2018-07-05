@@ -25,7 +25,7 @@ public class Team {
 
     private String name;
 
-    @ManyToMany(mappedBy = "teams")
+    @ManyToMany(mappedBy = "teams",fetch = FetchType.LAZY)
     private Set<Season> season;
 
 }

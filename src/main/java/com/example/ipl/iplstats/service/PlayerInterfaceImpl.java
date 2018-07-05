@@ -34,25 +34,38 @@ public class PlayerInterfaceImpl implements PlayerInterface {
     private TeamDAO teamDAO;
 
     @Override
-    public PlayerDTO getPlayerInfo(String playerName, int year) throws IPLStatException {
+    public List<PlayerDTO> getPlayerInfo(String playerName, int year) throws IPLStatException {
 
+        List<PlayerDTO> playerDTOList=null;
         Season season = seasonDAO.findByYear(String.valueOf(year));
-        PlayerDTO playerDTO=null;
-        Optional<Player> player = playerDAO.findByNameAndSeason(playerName,season);
+//        PlayerDTO playerDTO=null;
+//        Optional<Player> player = playerDAO.findByNameAndSeason(playerName,season);
+//        if(player.isPresent()){
+//            log.debug(player.toString());
+//            playerDTO= mapper.playerToPlayerDTO(player.get());
+//        }else{
+//            throw new IPLStatException("IPL100","Player Not found");
+//        }
 
-        if(player.isPresent()){
-            log.debug(player.toString());
-            playerDTO= mapper.playerToPlayerDTO(player.get());
-        }else{
-            throw new IPLStatException("IPL100","Player Not found");
+        List<Player> playerList = playerDAO.findByNameAndSeasonLikeQuery("%"+playerName+"%",season);
+        if(playerList!=null&&playerList.size()>0){
+            playerDTOList = new ArrayList<>();
+            ListIterator<Player> iter = playerList.listIterator();
+            while (iter.hasNext()){
+                Player player = (Player) iter.next();
+                PlayerDTO playerDTO = mapper.playerToPlayerDTO(player);
+                playerDTOList.add(playerDTO);
+            }
         }
-        return playerDTO;
+
+        return playerDTOList;
     }
 
     @Override
     public List<PlayerDTO> getPlayerInfo(String playerName) throws IPLStatException {
         List<PlayerDTO> playerDTOList=null;
-        List<Player> playerList = playerDAO.findByName(playerName);
+
+        List<Player> playerList = playerDAO.findByNameLikeQuery("%"+playerName+"%");
 
         if(playerList!=null){
             playerDTOList = new ArrayList<>();

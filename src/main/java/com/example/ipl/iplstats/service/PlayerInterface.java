@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface PlayerInterface {
 
-    PlayerDTO getPlayerInfo(String playerName, int season) throws IPLStatException;
+    List<PlayerDTO> getPlayerInfo(String playerName, int season) throws IPLStatException;
 
     List<PlayerDTO> getPlayerInfo(String name) throws IPLStatException;
 

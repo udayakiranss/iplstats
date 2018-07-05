@@ -7,6 +7,7 @@ import com.example.ipl.iplstats.entity.MatchSummary;
 import com.example.ipl.iplstats.entity.Season;
 import com.example.ipl.iplstats.entity.Team;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 import org.mapstruct.ReportingPolicy;
 
@@ -14,9 +15,20 @@ import java.util.Set;
 
 @Mapper(unmappedTargetPolicy = ReportingPolicy.WARN, componentModel = "spring")
 public interface SeasonMapper {
-
+    @Mappings({
+            @org.mapstruct.Mapping(target = "id", source = "id"),
+            @org.mapstruct.Mapping(target = "year", source = "year"),
+            @org.mapstruct.Mapping(target = "description", source = "description"),
+            @Mapping(ignore = true, target = "teams")
+    })
     Season dtoToDomain(final SeasonDTO seasonDTO);
 
+    @Mappings({
+            @org.mapstruct.Mapping(target = "id", source = "id"),
+            @org.mapstruct.Mapping(target = "year", source = "year"),
+            @org.mapstruct.Mapping(target = "description", source = "description"),
+            @Mapping(ignore = true, target = "teams")
+    })
     SeasonDTO domainToDTO(final  Season season);
 
     Team teamDTOToTeam(TeamDTO team);
