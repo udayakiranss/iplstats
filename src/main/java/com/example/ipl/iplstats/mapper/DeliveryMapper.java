@@ -17,7 +17,7 @@ public interface DeliveryMapper {
 
     @Mappings({
             @Mapping(source = "deliveryDetailsDTO.match_id", target = "matchID"),
-//            @Mapping(source = "deliveryDetailsDTO.inning", target = "innings"),
+            @Mapping(source = "deliveryDetailsDTO.inning", target = "innings"),
             @Mapping(source = "deliveryDetailsDTO.batting_team", target = "battingTeam"),
             @Mapping(source = "deliveryDetailsDTO.bowling_team", target = "bowlingTeam"),
 //            @Mapping(source = "deliveryDetailsDTO.over", target = "over"),

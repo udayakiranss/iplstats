@@ -334,7 +334,7 @@ public class SeasonController {
                         List<PlayerDTO> playerDTOList= playerInterface.getPlayerInfo(playerName,year);
                         if(playerDTOList!=null&&playerDTOList.size()>0){
 
-                            responseText = playerDTOList.get(0).getName() + " scored " + playerDTOList.get(0).getTotalRuns()  + " runs and got " + playerDTOList.get(0).getTotalWickets() +" wickets in season " + year;
+                            responseText = playerDTOList.get(0).getName() + " played " + playerDTOList.get(0).getNoOfMatches()  +" and scored " + playerDTOList.get(0).getTotalRuns()  + " runs and got " + playerDTOList.get(0).getTotalWickets() +" wickets in season " + year;
                         }else{
                             responseText="Not a valid player in the season, Please send a valid player";
                         }

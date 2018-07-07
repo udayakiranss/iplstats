@@ -40,6 +40,7 @@ public class IPLDataLoader {
     @Autowired
     private ApplicationConfig config;
 
+    private int kohli_Runs_2017=0;
 
     public void parseMatches(String matchesFile)throws  IPLStatException{
 
@@ -65,25 +66,51 @@ public class IPLDataLoader {
             String [] seasons= config.getSeasonLoaded().split(",");
             List<String> seasonsToBeLoaded = new ArrayList<String>(Arrays.asList(seasons));
 
+            CsvParser.skip(1).mapTo(DeliveryDetailsDTO.class)
+                    .addMapping("match_id")
+                    .addMapping("inning")
+                    .addMapping("batting_team")
+                    .addMapping("bowling_team")
+                    .addMapping("over")
+                    .addMapping("ball")
+                    .addMapping("batsman")
+                    .addMapping("non_striker")
+                    .addMapping("bowler")
+                    .addMapping("is_super_over")
+                    .addMapping("wide_runs")
+                    .addMapping("bye_runs")
+                    .addMapping("legbye_runs")
+                    .addMapping("noball_runs")
+                    .addMapping("penalty_runs")
+                    .addMapping("batsman_runs")
+                    .addMapping("extra_runs")
+                    .addMapping("total_runs")
+                    .addMapping("player_dismissed")
+                    .addMapping("dismissal_kind")
+                    .addMapping("fielder")
+                    .stream(csvFile).forEach(matchDetailsDTO -> deliveryInfoList.add(matchDetailsDTO));
 
-            CsvParser
-                    .mapWith(CsvMapperFactory
-                            .newInstance()
-                            .defaultDateFormat("yyyymmdd")
-                            .newBuilder(DeliveryDetailsDTO.class)
-                            .addMapping("match_id",0)
-                            .addMapping("batting_team",2)
-                            .addMapping("bowling_team",3)
-                            .addMapping("batsman",6)
-                            .addMapping("non_striker",7)
-                            .addMapping("bowler",8)
-                            .addMapping("batsman_runs",15)
-                            .addMapping("total_runs",17)
-                            .addMapping("player_dismissed",18)
-                            .addMapping("dismissal_kind",19)
-                            .addMapping("fielder",20)
-                            .mapper())
-                    .forEach(csvFile, matchDetailsDTO -> deliveryInfoList.add(matchDetailsDTO));
+
+
+//            CsvParser
+//                    .mapWith(CsvMapperFactory
+//                            .newInstance()
+//                            .defaultDateFormat("yyyymmdd")
+//                            .newBuilder(DeliveryDetailsDTO.class)
+//                            .addMapping("match_id",0)
+//                            .addMapping("inning",1)
+//                            .addMapping("batting_team",2)
+//                            .addMapping("bowling_team",3)
+//                            .addMapping("batsman",6)
+//                            .addMapping("non_striker",7)
+//                            .addMapping("bowler",8)
+//                            .addMapping("batsman_runs",15)
+//                            .addMapping("total_runs",17)
+//                            .addMapping("player_dismissed",18)
+//                            .addMapping("dismissal_kind",19)
+//                            .addMapping("fielder",20)
+//                            .mapper())
+//                    .forEach(csvFile, matchDetailsDTO -> deliveryInfoList.add(matchDetailsDTO));
 
             log.debug("matches = " + deliveryInfoList.size());
 
@@ -117,12 +144,12 @@ public class IPLDataLoader {
                         MatchDetails matchDetails = mapper.deliveriesToMatchDetails(deliveryDetails);
                         boolean dismissalType = matchDetails.isWicketToBowler();
                         matchDetails.setMatchSummary(summary);
-                        matchDetails.setBatsman(getPlayer(matchId, batsman, Integer.parseInt(runs), dismissalType, season, battingTeam));
-                        matchDetails.setNonStriker(getPlayer(matchId, nonStriker, 0, dismissalType, season, battingTeam));
-                        matchDetails.setBowler(getPlayer(matchId, bowler, Integer.parseInt(runs), dismissalType, season, fieldingTeam));
-                        matchDetails.setFielder(getPlayer(matchId, deliveryDetails.getFielder(), 0, dismissalType, season, fieldingTeam));
+                        matchDetails.setBatsman(getPlayer(matchId, batsman, Integer.parseInt(runs), dismissalType, season, battingTeam,false));
+                        matchDetails.setNonStriker(getPlayer(matchId, nonStriker, 0, dismissalType, season, battingTeam,false));
+                        matchDetails.setBowler(getPlayer(matchId, bowler, 0, dismissalType, season, fieldingTeam,true));
+                        matchDetails.setFielder(getPlayer(matchId, deliveryDetails.getFielder(), 0, dismissalType, season, fieldingTeam,false));
                         matchDetails.setPlayerDismissed(getPlayer(matchId,
-                                deliveryDetails.getPlayer_dismissed(), 0, dismissalType, season, battingTeam));
+                                deliveryDetails.getPlayer_dismissed(), 0, dismissalType, season, battingTeam,false));
 
                         if(seasonsToBeLoaded.contains(summary.getSeason().getYear())){
                             detailsList.add(matchDetails);
@@ -147,7 +174,7 @@ public class IPLDataLoader {
 
 
 
-    private Player getPlayer( String matchId,String name,int runs, boolean isWicketToBowler, Season season,Team team) {
+    private Player getPlayer( String matchId,String name,int runs, boolean isWicketToBowler, Season season,Team team, boolean isBowler) {
         Player player = null;
         boolean found = false;
 
@@ -171,8 +198,13 @@ public class IPLDataLoader {
             player.addMatch(matchId);
             players.add(player);
         }
+
+//        if(player.getName().equals("YS Chahal") && season.getYear().equals("2017")){
+//            kohli_Runs_2017+=runs;
+//        }
+
         player.addRuns(runs);
-        if(isWicketToBowler){
+        if(isWicketToBowler && isBowler){
             player.addWickets();
         }
         return player;

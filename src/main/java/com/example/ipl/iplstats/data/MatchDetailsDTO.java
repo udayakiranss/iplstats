@@ -15,7 +15,7 @@ public class MatchDetailsDTO {
 
     private Long id;
     private Long matchID;
-//    private int innings;
+    private int innings;
     private  String battingTeam;
     private  String bowlingTeam;
 //    private int over;
