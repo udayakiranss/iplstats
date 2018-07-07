@@ -312,7 +312,7 @@ public class SeasonController {
                     Value category = fieldsMap.get("Category");
                     Value player = fieldsMap.get("any");
                     String playerName ="";
-                    if(player!=null && player.getListValue()!=null && player.getListValue().getValues(0)!=null){
+                    if(player!=null && player.getListValue()!=null && player.getListValue().getValuesCount()>0  && player.getListValue().getValues(0)!=null){
                         playerName=player.getListValue().getValues(0).getStringValue();
                     }
 
