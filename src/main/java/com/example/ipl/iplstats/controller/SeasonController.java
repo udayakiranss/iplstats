@@ -15,6 +15,7 @@ import com.google.cloud.dialogflow.v2.QueryResult;
 import com.google.cloud.dialogflow.v2.WebhookRequest;
 import com.google.cloud.dialogflow.v2.WebhookResponse;
 import com.google.gson.Gson;
+import com.google.protobuf.ListValue;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
 import com.google.protobuf.util.JsonFormat;
@@ -306,7 +307,7 @@ public class SeasonController {
                     Struct parameters = queryResult.getParameters();
 
                     Map<String, Value> fieldsMap = parameters.getFieldsMap();
-                    Value seasonValue = fieldsMap.get("Season");
+                    ListValue seasonValue = fieldsMap.get("Season").getListValue();
                     Value statistics =  fieldsMap.get("Statistics");
                     Value result = fieldsMap.get("Result");
                     Value category = fieldsMap.get("Category");
@@ -322,7 +323,7 @@ public class SeasonController {
                         }
                     }
 
-                    int year = new Integer(seasonValue.getStringValue());
+                    int year = new Integer(seasonValue.getValues(0).getStringValue());
                     SeasonDTO seasonDTO = new SeasonDTO();
                     seasonDTO.setYear(year);
                     SeasonStatisticsDTO pointsDTO = seasonStatisticsDTOMap.get(seasonDTO);
