@@ -69,8 +69,20 @@ public class IPLDataLoader {
             CsvParser
                     .mapWith(CsvMapperFactory
                             .newInstance()
-                            .defaultDateFormat("yyyy-MM-dd")
-                            .newMapper(DeliveryDetailsDTO.class))
+                            .defaultDateFormat("yyyymmdd")
+                            .newBuilder(DeliveryDetailsDTO.class)
+                            .addMapping("match_id",0)
+                            .addMapping("batting_team",2)
+                            .addMapping("bowling_team",3)
+                            .addMapping("batsman",6)
+                            .addMapping("non_striker",7)
+                            .addMapping("bowler",8)
+                            .addMapping("batsman_runs",15)
+                            .addMapping("total_runs",17)
+                            .addMapping("player_dismissed",18)
+                            .addMapping("dismissal_kind",19)
+                            .addMapping("fielder",20)
+                            .mapper())
                     .forEach(csvFile, matchDetailsDTO -> deliveryInfoList.add(matchDetailsDTO));
 
             log.debug("matches = " + deliveryInfoList.size());
@@ -85,41 +97,43 @@ public class IPLDataLoader {
                 String runs= deliveryDetails.getBatsman_runs();
 
                 String matchId = deliveryDetails.getMatch_id();
+                if(!matchId.equals("match_id")){
 
-                MatchSummary summary = matchDAO.getOne(new Long(deliveryDetails.getMatch_id()));
-                if(summary!=null && seasonsToBeLoaded.contains(summary.getSeason().getYear())){
-                    Season season = summary.getSeason();
-                    Team battingTeam = null;
-                    Team fieldingTeam = null;
-                    if(summary.getTeamA().getName().equals(deliveryDetails.getBatting_team())){
-                        battingTeam = summary.getTeamA();
-                        fieldingTeam = summary.getTeamB();
-                    }else{
-                        battingTeam = summary.getTeamB();
-                        fieldingTeam = summary.getTeamA();
+
+                    MatchSummary summary = matchDAO.getOne(new Long(deliveryDetails.getMatch_id()));
+                    if(summary!=null && seasonsToBeLoaded.contains(summary.getSeason().getYear())) {
+                        Season season = summary.getSeason();
+                        Team battingTeam = null;
+                        Team fieldingTeam = null;
+                        if (summary.getTeamA().getName().equals(deliveryDetails.getBatting_team())) {
+                            battingTeam = summary.getTeamA();
+                            fieldingTeam = summary.getTeamB();
+                        } else {
+                            battingTeam = summary.getTeamB();
+                            fieldingTeam = summary.getTeamA();
+                        }
+
+
+                        MatchDetails matchDetails = mapper.deliveriesToMatchDetails(deliveryDetails);
+                        boolean dismissalType = matchDetails.isWicketToBowler();
+                        matchDetails.setMatchSummary(summary);
+                        matchDetails.setBatsman(getPlayer(matchId, batsman, Integer.parseInt(runs), dismissalType, season, battingTeam));
+                        matchDetails.setNonStriker(getPlayer(matchId, nonStriker, 0, dismissalType, season, battingTeam));
+                        matchDetails.setBowler(getPlayer(matchId, bowler, Integer.parseInt(runs), dismissalType, season, fieldingTeam));
+                        matchDetails.setFielder(getPlayer(matchId, deliveryDetails.getFielder(), 0, dismissalType, season, fieldingTeam));
+                        matchDetails.setPlayerDismissed(getPlayer(matchId,
+                                deliveryDetails.getPlayer_dismissed(), 0, dismissalType, season, battingTeam));
+
+
+                        detailsList.add(matchDetails);
                     }
-
-
-                    MatchDetails matchDetails =  mapper.deliveriesToMatchDetails(deliveryDetails);
-                    boolean dismissalType = matchDetails.isWicketToBowler();
-                    matchDetails.setMatchSummary(summary);
-                    matchDetails.setBatsman(getPlayer(matchId,batsman,Integer.parseInt(runs),dismissalType,season,battingTeam));
-                    matchDetails.setNonStriker(getPlayer(matchId,nonStriker,0,dismissalType,season,battingTeam));
-                    matchDetails.setBowler(getPlayer(matchId,bowler,Integer.parseInt(runs),dismissalType,season,fieldingTeam));
-                    matchDetails.setFielder(getPlayer(matchId,deliveryDetails.getFielder(),0,dismissalType,season,fieldingTeam));
-                    matchDetails.setPlayerDismissed(getPlayer(matchId,
-                            deliveryDetails.getPlayer_dismissed(),0,dismissalType,season,battingTeam));
-
-
-
-                    detailsList.add(matchDetails);
 
 
                 }
 
             });
 
-
+            deliveryInfoList = null;
         } catch (IOException e) {
             e.printStackTrace();
             throw new IPLStatException("IPLS112","Not able to parse deliveries files");
