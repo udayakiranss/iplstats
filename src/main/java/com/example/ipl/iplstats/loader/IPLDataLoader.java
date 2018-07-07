@@ -30,7 +30,9 @@ public class IPLDataLoader {
     @Getter
     private Set<Player> players = new HashSet<Player>();
     @Getter
-    private List<MatchSummary> summaryList = new ArrayList<MatchSummary>();
+//    private List<MatchSummary> summaryList1 = new ArrayList<MatchSummary>();
+
+    private Map<String, MatchSummary> summaryMap = new HashMap<String, MatchSummary>();
 
     private Set<DeliveryDetailsDTO> deliveryInfoList=new HashSet<DeliveryDetailsDTO>();
     @Getter
@@ -40,7 +42,6 @@ public class IPLDataLoader {
     @Autowired
     private ApplicationConfig config;
 
-    private int kohli_Runs_2017=0;
 
     public void parseMatches(String matchesFile)throws  IPLStatException{
 
@@ -124,10 +125,12 @@ public class IPLDataLoader {
                 String runs= deliveryDetails.getBatsman_runs();
 
                 String matchId = deliveryDetails.getMatch_id();
+                String dismissalKind = deliveryDetails.getDismissal_kind();
                 if(!matchId.equals("match_id")){
 
-
-                    MatchSummary summary = matchDAO.getOne(new Long(deliveryDetails.getMatch_id()));
+//                    summaryList.get
+//                    MatchSummary summary = matchDAO.getOne(new Long(deliveryDetails.getMatch_id()));
+                    MatchSummary summary = summaryMap.get(matchId);
                     if(summary!=null) {
                         Season season = summary.getSeason();
                         Team battingTeam = null;
@@ -140,20 +143,29 @@ public class IPLDataLoader {
                             fieldingTeam = summary.getTeamA();
                         }
 
+                        boolean dismissalType = isWicketToBowler(dismissalKind);
 
-                        MatchDetails matchDetails = mapper.deliveriesToMatchDetails(deliveryDetails);
-                        boolean dismissalType = matchDetails.isWicketToBowler();
-                        matchDetails.setMatchSummary(summary);
-                        matchDetails.setBatsman(getPlayer(matchId, batsman, Integer.parseInt(runs), dismissalType, season, battingTeam,false));
-                        matchDetails.setNonStriker(getPlayer(matchId, nonStriker, 0, dismissalType, season, battingTeam,false));
-                        matchDetails.setBowler(getPlayer(matchId, bowler, 0, dismissalType, season, fieldingTeam,true));
-                        matchDetails.setFielder(getPlayer(matchId, deliveryDetails.getFielder(), 0, dismissalType, season, fieldingTeam,false));
-                        matchDetails.setPlayerDismissed(getPlayer(matchId,
-                                deliveryDetails.getPlayer_dismissed(), 0, dismissalType, season, battingTeam,false));
+                        getPlayer(matchId, batsman, Integer.parseInt(runs), dismissalType, season, battingTeam,false);
+                        getPlayer(matchId, nonStriker, 0, dismissalType, season, battingTeam,false);
+                        getPlayer(matchId, bowler, 0, dismissalType, season, fieldingTeam,true);
+                        getPlayer(matchId, deliveryDetails.getFielder(), 0, dismissalType, season, fieldingTeam,false);
+                        getPlayer(matchId, deliveryDetails.getPlayer_dismissed(), 0, dismissalType, season, battingTeam,false);
 
-                        if(seasonsToBeLoaded.contains(summary.getSeason().getYear())){
-                            detailsList.add(matchDetails);
-                        }
+//                        MatchDetails matchDetails = mapper.deliveriesToMatchDetails(deliveryDetails);
+//                        boolean dismissalType = matchDetails.isWicketToBowler();
+//                        matchDetails.setMatchSummary(summary);
+//                        matchDetails.setBatsman(getPlayer(matchId, batsman, Integer.parseInt(runs), dismissalType, season, battingTeam,false));
+//                        matchDetails.setNonStriker(getPlayer(matchId, nonStriker, 0, dismissalType, season, battingTeam,false));
+//                        matchDetails.setBowler(getPlayer(matchId, bowler, 0, dismissalType, season, fieldingTeam,true));
+//                        matchDetails.setFielder(getPlayer(matchId, deliveryDetails.getFielder(), 0, dismissalType, season, fieldingTeam,false));
+//                        matchDetails.setPlayerDismissed(getPlayer(matchId,
+//                                deliveryDetails.getPlayer_dismissed(), 0, dismissalType, season, battingTeam,false));
+//
+//                        if(seasonsToBeLoaded.contains(summary.getSeason().getYear())){
+//                            detailsList.add(matchDetails);
+//                        }else{
+//                            matchDetails=null;
+//                        }
 
                     }
 
@@ -171,6 +183,19 @@ public class IPLDataLoader {
 
     }
 
+    public boolean isWicketToBowler(String dismissalKind){
+        if(dismissalKind!=null && (dismissalKind.equals(DismissalKind.BOWLED.getKind()) ||
+                dismissalKind.equals(DismissalKind.CAUGHT.getKind()) ||
+                dismissalKind.equals(DismissalKind.CAUGHT_BOWLED.getKind()) ||
+                dismissalKind.equals(DismissalKind.LBW.getKind()) ||
+                dismissalKind.equals(DismissalKind.HIT_WICKET.getKind()) ||
+                dismissalKind.equals(DismissalKind.STUMPED.getKind()))){
+
+            return true;
+
+        }
+        return false;
+    }
 
 
 
@@ -284,15 +309,21 @@ public class IPLDataLoader {
 
         matSummary.setDate(match.getDate());
         matSummary.setSeason(season);
-        int summaryIndex = summaryList.indexOf(matSummary);
+        summaryMap.put(match.getId(),matSummary);
 
-        if(summaryIndex!=-1){
-            return  summaryList.get(summaryIndex);
-        }else{
-            summaryList.add(matSummary);
-        }
+//        int summaryIndex = summaryList.indexOf(matSummary);
+//
+//        if(summaryIndex!=-1){
+//            return  summaryList.get(summaryIndex);
+//        }else{
+//            summaryList.add(matSummary);
+//        }
         return matSummary;
 
+    }
+
+    public List<MatchSummary> getSummaryList(){
+        return new ArrayList<MatchSummary>(summaryMap.values());
     }
 
 }
