@@ -110,16 +110,7 @@ public class SeasonInterfaceImpl implements SeasonInterface {
         Iterable<MatchSummary> summaries = dataLoader.getSummaryList();
         matchDAO.save(summaries);
 
-        // Populate
 
-        Set<MatchesDTO> matches = dataLoader.getMatches();
-
-        matches.forEach(matchesDTO -> {
-
-
-
-
-        });
 
     }
 

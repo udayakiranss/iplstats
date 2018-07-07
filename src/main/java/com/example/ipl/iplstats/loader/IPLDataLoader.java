@@ -52,7 +52,7 @@ public class IPLDataLoader {
                     .forEach(matchesFile,matchesDTO -> matches.add(matchesDTO));
 
             createSeason();
-
+            matches=null;
         } catch (IOException e) {
             e.printStackTrace();
             throw new IPLStatException("IPLS111","Not able to parse matches files");
