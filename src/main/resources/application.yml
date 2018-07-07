@@ -32,7 +32,7 @@ spring:
         ddl-auto: create-drop
     show-sql: false
 
-
+seasonLoaded: "2017"
 
 logging:
   level:

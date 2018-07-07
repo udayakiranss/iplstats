@@ -1,5 +1,6 @@
 package com.example.ipl.iplstats.loader;
 
+import com.example.ipl.iplstats.config.ApplicationConfig;
 import com.example.ipl.iplstats.dao.MatchDAO;
 import com.example.ipl.iplstats.data.DeliveryDetailsDTO;
 import com.example.ipl.iplstats.data.MatchesDTO;
@@ -36,6 +37,8 @@ public class IPLDataLoader {
     private List<MatchDetails> detailsList = new ArrayList<MatchDetails>();
     @Autowired
     private MatchDAO matchDAO;
+    @Autowired
+    private ApplicationConfig config;
 
 
     public void parseMatches(String matchesFile)throws  IPLStatException{
@@ -59,6 +62,10 @@ public class IPLDataLoader {
 
     public Set<DeliveryDetailsDTO> parseDeliveriesFile(String csvFile)throws  IPLStatException {
         try {
+            String [] seasons= config.getSeasonLoaded().split(",");
+            List<String> seasonsToBeLoaded = new ArrayList<String>(Arrays.asList(seasons));
+
+
             CsvParser
                     .mapWith(CsvMapperFactory
                             .newInstance()
@@ -67,6 +74,9 @@ public class IPLDataLoader {
                     .forEach(csvFile, matchDetailsDTO -> deliveryInfoList.add(matchDetailsDTO));
 
             log.debug("matches = " + deliveryInfoList.size());
+
+
+
             DeliveryMapper mapper = Mappers.getMapper(DeliveryMapper.class);
             deliveryInfoList.forEach(deliveryDetails-> {
                 String batsman = deliveryDetails.getBatsman();
@@ -101,8 +111,10 @@ public class IPLDataLoader {
                             deliveryDetails.getPlayer_dismissed(),0,dismissalType,season,battingTeam));
 
 
+                    if(seasonsToBeLoaded.contains(summary.getSeason().getYear())){
+                        detailsList.add(matchDetails);
+                    }
 
-                    detailsList.add(matchDetails);
                 }
 
             });
