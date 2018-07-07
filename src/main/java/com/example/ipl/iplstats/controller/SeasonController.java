@@ -314,6 +314,12 @@ public class SeasonController {
                     String playerName ="";
                     if(player!=null && player.getListValue()!=null && player.getListValue().getValuesCount()>0  && player.getListValue().getValues(0)!=null){
                         playerName=player.getListValue().getValues(0).getStringValue();
+                        String[] players = playerName.split("\\s");
+                        playerName=players[players.length-1];
+                        playerName = playerName.substring(0,1).toUpperCase() + playerName.substring(1).toLowerCase();
+                        if(playerName.endsWith("'s")){
+                            playerName=playerName.substring(0,playerName.indexOf("'"));
+                        }
                     }
 
                     int year = new Integer(seasonValue.getStringValue());
@@ -323,6 +329,15 @@ public class SeasonController {
 
 
                     String responseText="";
+                    if(statistics!=null && statistics.getStringValue()!=null&&statistics.getStringValue().equals("Details")){
+                        List<PlayerDTO> playerDTOList= playerInterface.getPlayerInfo(playerName,year);
+                        if(playerDTOList!=null&&playerDTOList.size()>0){
+
+                            responseText = playerDTOList.get(0).getName() + " scored " + playerDTOList.get(0).getTotalRuns()  + " runs and got " + playerDTOList.get(0).getTotalWickets() +" wickets in season " + year;
+                        }else{
+                            responseText="Not a valid player in the season, Please send a valid player";
+                        }
+                    }
                     if(result!=null && result.getStringValue().length() > 0 ){
                         String winner = pointsDTO.getWinner();
                         String loser = pointsDTO.getLoser();
@@ -336,7 +351,7 @@ public class SeasonController {
                     }else if(statistics.getStringValue().equals("Mom")){
                         String mom = pointsDTO.getPlayerOfMatch();
                         responseText = mom + " was man of the match in finals of season " + year;
-                    }else if(category.getListValue().getValues(0).getStringValue().equals("Wickets")){
+                    }else if(category.getListValue()!=null && category.getListValue().getValuesCount() > 0 && category.getListValue().getValues(0).getStringValue().equals("Wickets")){
                         List<PlayerDTO> playerDTOList= playerInterface.getPlayerInfo(playerName,year);
 
                         if(playerDTOList!=null&&playerDTOList.size()>0){
@@ -344,7 +359,7 @@ public class SeasonController {
                         }else{
                             responseText="Not a valid player in the season, Please send a valid player";
                         }
-                    }else if(category.getListValue().getValues(0).getStringValue().equals("Runs")){
+                    }else if(category.getListValue()!=null && category.getListValue().getValuesCount() > 0 && category.getListValue().getValues(0).getStringValue().equals("Runs")){
                         List<PlayerDTO> playerDTOList= playerInterface.getPlayerInfo(playerName,year);
 
                         if(playerDTOList!=null&&playerDTOList.size()>0){

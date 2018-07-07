@@ -127,7 +127,7 @@ public class IPLDataLoader {
                         if(seasonsToBeLoaded.contains(summary.getSeason().getYear())){
                             detailsList.add(matchDetails);
                         }
-                        
+
                     }
 
 

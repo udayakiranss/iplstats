@@ -30,8 +30,6 @@ public class SeasonTeamPointsDTO {
         if(totalMatchesPlayed !=14) {
             totalMatchesPlayed += 1;
             leagueMatch = true;
-        }else{
-            log.debug(teamName + " is playing a playoff match or final");
         }
         return leagueMatch;
     }
