@@ -101,7 +101,7 @@ public class IPLDataLoader {
 
 
                     MatchSummary summary = matchDAO.getOne(new Long(deliveryDetails.getMatch_id()));
-                    if(summary!=null && seasonsToBeLoaded.contains(summary.getSeason().getYear())) {
+                    if(summary!=null) {
                         Season season = summary.getSeason();
                         Team battingTeam = null;
                         Team fieldingTeam = null;
@@ -124,8 +124,10 @@ public class IPLDataLoader {
                         matchDetails.setPlayerDismissed(getPlayer(matchId,
                                 deliveryDetails.getPlayer_dismissed(), 0, dismissalType, season, battingTeam));
 
-
-                        detailsList.add(matchDetails);
+                        if(seasonsToBeLoaded.contains(summary.getSeason().getYear())){
+                            detailsList.add(matchDetails);
+                        }
+                        
                     }
 
 
