@@ -18,7 +18,8 @@ server:
 
 spring:
   datasource:
-    url: jdbc:h2:./db/test5Db;AUTO_SERVER=TRUE;MVCC=TRUE;IFEXISTS=FALSE
+#    url: jdbc:h2:./db/test5Db;AUTO_SERVER=TRUE;MVCC=TRUE;IFEXISTS=FALSE
+     url: jdbc:h2:./db/test5Db;AUTO_SERVER=TRUE;
   h2:
   console:
     enabled: true
@@ -28,7 +29,7 @@ spring:
       hibernate:
         generate_statistics: true
         format_sql: true
-        ddl-auto: none
+        ddl-auto: create-drop
     show-sql: false
 
 
