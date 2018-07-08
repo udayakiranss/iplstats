@@ -6,6 +6,7 @@ import com.example.ipl.iplstats.entity.*;
 import com.example.ipl.iplstats.exception.IPLStatException;
 import com.example.ipl.iplstats.loader.IPLDataLoader;
 import com.example.ipl.iplstats.mapper.SeasonMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.mapstruct.factory.Mappers;
@@ -196,7 +197,36 @@ public class SeasonInterfaceImpl implements SeasonInterface {
         return pointsDTO;
     }
 
+    @Override
+    public PlayerDTO orangeCapPlayer(SeasonDTO seasonDTO) {
+        List<Object[]> playerDetails = playerDAO.findByMaxRuns(seasonDTO.getId());
+        PlayerDTO playerDTO = new PlayerDTO();
 
+        if(playerDetails!=null && playerDetails.size() == 1){
+            Object[] object  = playerDetails.get(0);
+            String name = (String)object[0];
+            int runs = (Integer)object[1];
+            playerDTO.setName(name);
+            playerDTO.setTotalRuns(runs);
+        }
+        return playerDTO;
+
+    }
+
+    @Override
+    public PlayerDTO purpleCapPlayer(SeasonDTO seasonDTO) {
+        List<Object[]> playerDetails = playerDAO.findByMaxWickets(seasonDTO.getId());
+        PlayerDTO playerDTO = new PlayerDTO();
+
+        if(playerDetails!=null && playerDetails.size() == 1){
+            Object[] object  = playerDetails.get(0);
+            String name = (String)object[0];
+            int wickets = (Integer)object[1];
+            playerDTO.setName(name);
+            playerDTO.setTotalWickets(wickets);
+        }
+        return playerDTO;
+    }
 
 
 }

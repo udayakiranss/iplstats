@@ -3,6 +3,7 @@ package com.example.ipl.iplstats.delegate;
 import com.example.ipl.iplstats.data.PlayerDTO;
 import com.example.ipl.iplstats.data.SeasonDTO;
 import com.example.ipl.iplstats.data.SeasonStatisticsDTO;
+import com.example.ipl.iplstats.entity.Season;
 import com.example.ipl.iplstats.exception.IPLStatException;
 import com.example.ipl.iplstats.service.PlayerInterface;
 import com.example.ipl.iplstats.service.SeasonInterface;
@@ -55,6 +56,10 @@ public class ChatBotTelegramDelegate {
                     statistics.getStringValue().equals("Mom")){
                 String mom = pointsDTO.getPlayerOfMatch();
                 answers.add( mom + " was man of the match in finals of season " + year);
+                PlayerDTO orangeCapPlayer = seasonInterface.orangeCapPlayer(seasonDTO);
+                answers.add(orangeCapPlayer.getName() + " got the orange cap for scoring "+ orangeCapPlayer.getTotalRuns() + " runs");
+                PlayerDTO purpleCapPlayer = seasonInterface.purpleCapPlayer(seasonDTO);
+                answers.add(purpleCapPlayer.getName() + " got the purple cap for getting "+ purpleCapPlayer.getTotalWickets() + " wickets");
 
             }
 
@@ -95,19 +100,43 @@ public class ChatBotTelegramDelegate {
                             answers.add(answerPlayerRecords(playerDTO,"Wickets"));
                         }
 
+                        if(stats.equals("OrangeCap")){
+                            PlayerDTO playerDTO1 = seasonInterface.orangeCapPlayer(seasonDTO);
+                            answers.add(playerDTO1.getName() + " got the orange cap for scoring "+ playerDTO1.getTotalRuns() + " runs");
+                        }
+
+                        if(stats.equals("PurpleCap")){
+                            PlayerDTO playerDTO1 = seasonInterface.purpleCapPlayer(seasonDTO);
+                            answers.add(playerDTO1.getName() + " got the purple cap for getting "+ playerDTO1.getTotalWickets() + " wickets");
+                        }
                     }
                 }
             }
 
+        }else if(statistics.getStringValue()!=null && statistics.getStringValue().length() >0){
+
+            String stats = statistics.getStringValue();
+            if(stats.equals("OrangeCap")){
+                PlayerDTO playerDTO1 = seasonInterface.orangeCapPlayer(seasonDTO);
+                answers.add(playerDTO1.getName() + " got the orange cap for scoring "+ playerDTO1.getTotalRuns() + " runs");
+            }
+
+            if(stats.equals("PurpleCap")){
+                PlayerDTO playerDTO1 = seasonInterface.purpleCapPlayer(seasonDTO);
+                answers.add(playerDTO1.getName() + " got the purple cap for getting "+ playerDTO1.getTotalWickets() + " wickets");
+            }
         }
 
         return answers;
     }
 
 
-    private SeasonDTO getSeasonDetails(int season){
-        SeasonDTO seasonDTO = new SeasonDTO();
-        seasonDTO.setYear(season);
+    private SeasonDTO getSeasonDetails(int year) throws IPLStatException {
+//        SeasonDTO seasonDTO = new SeasonDTO();
+//        seasonDTO.setYear(season);
+
+        SeasonDTO seasonDTO = seasonInterface.getSeason(year);
+
         return  seasonDTO;
     }
 

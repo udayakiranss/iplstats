@@ -1,5 +1,6 @@
 package com.example.ipl.iplstats.dao;
 
+import com.example.ipl.iplstats.data.SeasonDTO;
 import com.example.ipl.iplstats.entity.Player;
 import com.example.ipl.iplstats.entity.Season;
 import com.example.ipl.iplstats.entity.Team;
@@ -25,4 +26,9 @@ public interface PlayerDAO extends JpaRepository<Player, Long> {
     List<Player> findByName(String name);
 
     List<Player> findBySeasonAndTeam(Season season, Team team);
+    @Query(value="select name, max(TOTAL_RUNS ) from PLAYER where season_id=?1 group by name order by total_runs desc limit 1\n",nativeQuery = true)
+    List<Object[]>  findByMaxRuns(Long seasonId);
+
+    @Query(value = "select name, max(TOTAL_wickets ) from PLAYER where season_id=?1 group by name order by total_wickets desc limit 1\n",nativeQuery = true)
+    List<Object[]>  findByMaxWickets(Long seasonId);
 }

@@ -1,5 +1,6 @@
 package com.example.ipl.iplstats.service;
 
+import com.example.ipl.iplstats.data.PlayerDTO;
 import com.example.ipl.iplstats.data.SeasonDTO;
 import com.example.ipl.iplstats.data.SeasonStatisticsDTO;
 import com.example.ipl.iplstats.exception.IPLStatException;
@@ -21,6 +22,10 @@ public interface SeasonInterface {
     void loadMatches(String file) throws  IPLStatException;
 
     SeasonStatisticsDTO fetchPointsTable(SeasonDTO seasonDTO) throws  IPLStatException;
+
+    PlayerDTO orangeCapPlayer(SeasonDTO seasonDTO);
+
+    PlayerDTO purpleCapPlayer(SeasonDTO seasonDTO);
 
 
 }
