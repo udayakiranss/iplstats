@@ -5,6 +5,7 @@ import com.example.ipl.iplstats.data.PlayerDTO;
 import com.example.ipl.iplstats.data.SeasonDTO;
 import com.example.ipl.iplstats.data.SeasonStatisticsDTO;
 import com.example.ipl.iplstats.data.TeamDTO;
+import com.example.ipl.iplstats.delegate.ChatBotTelegramDelegate;
 import com.example.ipl.iplstats.exception.IPLStatException;
 import com.example.ipl.iplstats.service.PlayerInterface;
 import com.example.ipl.iplstats.service.SeasonInterface;
@@ -15,9 +16,6 @@ import com.google.cloud.dialogflow.v2.QueryResult;
 import com.google.cloud.dialogflow.v2.WebhookRequest;
 import com.google.cloud.dialogflow.v2.WebhookResponse;
 import com.google.gson.Gson;
-import com.google.protobuf.ListValue;
-import com.google.protobuf.Struct;
-import com.google.protobuf.Value;
 import com.google.protobuf.util.JsonFormat;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -71,6 +69,8 @@ public class SeasonController {
     private ResourceLoader resourceLoader;
     @Autowired
     private Gson gson;
+    @Autowired
+    private ChatBotTelegramDelegate chatBotTelegramDelegate;
 
     private static Gson gsonStatic ;
 
@@ -294,137 +294,41 @@ public class SeasonController {
         WebhookResponse response = null;
         log.debug("request:"+request);
         try {
-//            WebhookRequest.Builder builder = WebhookRequest.newBuilder();
-//            JsonFormat.parser().merge(request,builder);
-//            WebhookRequest request2 = builder.build();
-
             if(request!=null){
+
                 QueryResult queryResult = request.getQueryResult();
                 WebhookResponse.Builder responseBuilder = WebhookResponse.newBuilder();
                 responseBuilder.setFulfillmentText("Acknowledged the message");
-                String responseText="";
-                String playerBattingRecordText="";
-                String playerBowlingRecordText="";
-                String playerMatchesRecordText="";
+                String responseText="Invalid request";
 
+                Intent.Message.Builder mBuilder = Intent.Message.newBuilder();
+                Intent.Message.Text.Builder builder = Intent.Message.Text.newBuilder();
 
                 if(request.getQueryResult().getAllRequiredParamsPresent()) {
-                    Struct parameters = queryResult.getParameters();
+                    List<String> answers = null;
+                    answers = chatBotTelegramDelegate.answerQuery(queryResult,seasonStatisticsDTOMap);
 
-                    Map<String, Value> fieldsMap = parameters.getFieldsMap();
-                    ListValue seasonValue = fieldsMap.get("Season").getListValue();
-                    Value statistics =  fieldsMap.get("Statistics");
-                    Value result = fieldsMap.get("Result");
-                    Value category = fieldsMap.get("Category");
-                    Value player = fieldsMap.get("any");
-                    String playerName ="";
-                    if(player!=null && player.getListValue()!=null && player.getListValue().getValuesCount()>0  && player.getListValue().getValues(0)!=null){
-                        playerName=player.getListValue().getValues(0).getStringValue();
-                        String[] players = playerName.split("\\s");
-                        playerName=players[players.length-1];
-                        playerName = playerName.substring(0,1).toUpperCase() + playerName.substring(1).toLowerCase();
-                        if(playerName.endsWith("'s")){
-                            playerName=playerName.substring(0,playerName.indexOf("'"));
-                        }
-                    }
+                    if(answers!=null && answers.size() > 0){
 
-                    int year = new Integer(seasonValue.getValues(0).getStringValue());
-                    SeasonDTO seasonDTO = new SeasonDTO();
-                    seasonDTO.setYear(year);
-                    SeasonStatisticsDTO pointsDTO = seasonStatisticsDTOMap.get(seasonDTO);
-
-
-
-                    if(statistics!=null && statistics.getStringValue()!=null&&statistics.getStringValue().equals("Details")){
-                        List<PlayerDTO> playerDTOList= playerInterface.getPlayerInfo(playerName,year);
-                        if(playerDTOList!=null&&playerDTOList.size()>0){
-                            String name = playerDTOList.get(0).getName();
-                            int noOfMatches = playerDTOList.get(0).getNoOfMatches();
-                            int seasonRuns = playerDTOList.get(0).getTotalRuns();
-                            int seasonWickets = playerDTOList.get(0).getTotalWickets();
-                            playerBattingRecordText = name  + " got " + seasonRuns + " wickets";
-                            playerBowlingRecordText = name  + " scored " + seasonRuns + " runs" ;
-                            playerMatchesRecordText = name  + " played " + noOfMatches + " matches"    ;
-
-//                            responseText = name  + " played " + noOfMatches  +" and scored " + seasonRuns  + " runs and got " + seasonWickets +" wickets in season " + year;
-                        }else{
-                            responseText="Not a valid player in the season, Please send a valid player";
-                        }
-                    }
-                    if(result!=null && result.getStringValue().length() > 0 ){
-                        String winner = pointsDTO.getWinner();
-                        String loser = pointsDTO.getLoser();
-                        if(result.getStringValue().equals("won")){
-                            responseText = winner + " won the championship for season "
-                                    + pointsDTO.getSeason();
-                        }else if(result.getStringValue().equals("lost")){
-                            responseText = loser + " lost the championship for season "
-                                    + pointsDTO.getSeason();
-                        }
-                    }else if(statistics.getStringValue().equals("Mom")){
-                        String mom = pointsDTO.getPlayerOfMatch();
-                        responseText = mom + " was man of the match in finals of season " + year;
-                    }else if(category.getListValue()!=null && category.getListValue().getValuesCount() > 0 && category.getListValue().getValues(0).getStringValue().equals("Wickets")){
-                        List<PlayerDTO> playerDTOList= playerInterface.getPlayerInfo(playerName,year);
-
-                        if(playerDTOList!=null&&playerDTOList.size()>0){
-                            responseText = playerDTOList.get(0).getName()  + " got " + playerDTOList.get(0).getTotalWickets() +" wickets in season " + year;
-                        }else{
-                            responseText="Not a valid player in the season, Please send a valid player";
-                        }
-                    }else if(category.getListValue()!=null && category.getListValue().getValuesCount() > 0 && category.getListValue().getValues(0).getStringValue().equals("Runs")){
-                        List<PlayerDTO> playerDTOList= playerInterface.getPlayerInfo(playerName,year);
-
-                        if(playerDTOList!=null&&playerDTOList.size()>0){
-                            responseText = playerDTOList.get(0).getName() + " scored " + playerDTOList.get(0).getTotalRuns() +" runs in season " + year;
-                        }else{
-                            responseText="Not a valid player in the season";
+                        for(String answer:answers){
+                            builder.addText(answer);
                         }
 
-                    }
-                    if(responseText.equals("")){
-                        responseBuilder.addFulfillmentMessages(
-                                Intent.Message.newBuilder()
-                                        .setText(Intent.Message.Text.newBuilder()
-                                                .addText(playerBattingRecordText)
-                                                .addText(playerBowlingRecordText)
-                                                .addText(playerMatchesRecordText)
-                                                .build())
-                                        .build()
-                        );
-                        responseBuilder.addFulfillmentMessages(
-                                Intent.Message.newBuilder().
-                                        setText(Intent.Message.Text.newBuilder()
-                                                .addText(responseText)
-                                                .addText("Try Line")
-                                                .addText("H")
-                                                .build())
-                                        .setText(Intent.Message.Text.newBuilder()
-                                                .addText(responseText)
-                                                .addText("kine")
-                                                .addText("JJJJ")
-                                                .build())
-                                        .build()
-                        );
                     }else{
-                        responseBuilder.addFulfillmentMessages(
-                                Intent.Message.newBuilder()
-                                        .setText(Intent.Message.Text.newBuilder()
-                                                .addText(responseText)
-                                                .build())
-                                        .build()
-                        );
+                        builder.addText(responseText);
                     }
-
-
 
                 }
+
+                Intent.Message.Text textMessage = builder.build();
+                Intent.Message message = mBuilder.setText(textMessage).build();
+                responseBuilder.addFulfillmentMessages(message);
                 responseBuilder.addAllOutputContexts(queryResult.getOutputContextsList());
                 response = responseBuilder.build();
-
-
             }
-        }catch (Exception e){
+        }catch (IPLStatException e) {
+            e.printStackTrace();
+        } catch (Exception e){
             e.printStackTrace();
         }
 
