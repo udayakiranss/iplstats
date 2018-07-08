@@ -163,7 +163,7 @@ public class SeasonController {
         try {
 
             ClassPathResource cpr = new ClassPathResource("matches.csv");
-            ClassPathResource cprd = new ClassPathResource("deliveries-sample.csv");
+            ClassPathResource cprd = new ClassPathResource("deliveries.csv");
 
             byte[] matchData = FileCopyUtils.copyToByteArray(cpr.getInputStream());
             String matchContent = new String(matchData, StandardCharsets.UTF_8);
@@ -293,16 +293,16 @@ public class SeasonController {
     public WebhookResponse getChatBotResponse(@RequestBody WebhookRequest request){
         WebhookResponse response = null;
         log.debug("request:"+request);
+        Intent.Message.Builder mBuilder = Intent.Message.newBuilder();
+        Intent.Message.Text.Builder builder = Intent.Message.Text.newBuilder();
+        String responseText="Invalid request";
+        WebhookResponse.Builder responseBuilder = WebhookResponse.newBuilder();
+        responseBuilder.setFulfillmentText("Acknowledged the message");
+
         try {
             if(request!=null){
 
                 QueryResult queryResult = request.getQueryResult();
-                WebhookResponse.Builder responseBuilder = WebhookResponse.newBuilder();
-                responseBuilder.setFulfillmentText("Acknowledged the message");
-                String responseText="Invalid request";
-
-                Intent.Message.Builder mBuilder = Intent.Message.newBuilder();
-                Intent.Message.Text.Builder builder = Intent.Message.Text.newBuilder();
 
                 if(request.getQueryResult().getAllRequiredParamsPresent()) {
                     List<String> answers = null;
@@ -320,25 +320,23 @@ public class SeasonController {
 
                 }
 
-                Intent.Message.Text textMessage = builder.build();
-                Intent.Message message = mBuilder.setText(textMessage).build();
-                responseBuilder.addFulfillmentMessages(message);
                 responseBuilder.addAllOutputContexts(queryResult.getOutputContextsList());
-                response = responseBuilder.build();
             }
         }catch (IPLStatException e) {
-            e.printStackTrace();
+            log.error("",e);
+            builder.addText("We are experiencing some problem, Please try again later");
         } catch (Exception e){
-            e.printStackTrace();
+            log.error("",e);
+            builder.addText("We are experiencing some problem, Please try again later");
         }
+        Intent.Message.Text textMessage = builder.build();
+        Intent.Message message = mBuilder.setText(textMessage).build();
+        responseBuilder.addFulfillmentMessages(message);
 
+        response = responseBuilder.build();
 
         return response;
     }
-
-
-
-
 
 
     @EventListener

@@ -58,27 +58,45 @@ public class ChatBotTelegramDelegate {
 
             }
 
-        }
-
-        if(player!=null && player.getListValue()!=null && player.getListValue().getValuesCount()>0){
+        }else if(player!=null && player.getListValue()!=null && player.getListValue().getValuesCount()>0){
 
             String playerName = player.getListValue().getValues(0).getStringValue();
-            PlayerDTO playerDTO = getPlayer(playerName,year);
 
-            if(category.getListValue()!=null &&category.getListValue().getValuesCount() >0){
-                String categoryType = category.getListValue().getValues(0).getStringValue();
-                answers.add(answerPlayerRecords(playerDTO,categoryType));
+            if(playerName.length() < 4){
+                answers.add("Not a valid player, Player name should be have at least 4 chars");
+                return answers;
             }
+            List<PlayerDTO> playerDTOList = getPlayer(playerName,year);
+            PlayerDTO playerDTO = null;
 
-            if(statistics.getStringValue()!=null && statistics.getStringValue().length() >0){
+            if(playerDTOList!=null){
 
-                String stats = statistics.getStringValue();
-                if(stats.equals("Details")){
-                    answers.add(answerPlayerRecords(playerDTO,"Matches"));
-                    answers.add(answerPlayerRecords(playerDTO,"Runs"));
-                    answers.add(answerPlayerRecords(playerDTO,"Wickets"));
+                if(playerDTOList.size() == 1) {
+                    playerDTO = playerDTOList.get(0);
+                }else{
+                    answers.add("We have multiple players with that name, Please send a player again");
+                    for(PlayerDTO playerDTO1 : playerDTOList){
+                        answers.add(playerDTO1.getName());
+                    }
                 }
 
+                if(playerDTO!=null){
+                    if(category.getListValue()!=null &&category.getListValue().getValuesCount() >0){
+                        String categoryType = category.getListValue().getValues(0).getStringValue();
+                        answers.add(answerPlayerRecords(playerDTO,categoryType));
+                    }
+
+                    if(statistics.getStringValue()!=null && statistics.getStringValue().length() >0){
+
+                        String stats = statistics.getStringValue();
+                        if(stats.equals("Details")){
+                            answers.add(answerPlayerRecords(playerDTO,"Matches"));
+                            answers.add(answerPlayerRecords(playerDTO,"Runs"));
+                            answers.add(answerPlayerRecords(playerDTO,"Wickets"));
+                        }
+
+                    }
+                }
             }
 
         }
@@ -93,7 +111,7 @@ public class ChatBotTelegramDelegate {
         return  seasonDTO;
     }
 
-    private PlayerDTO getPlayer(String playerName,int year)throws IPLStatException {
+    private List<PlayerDTO> getPlayer(String playerName,int year)throws IPLStatException {
 
         String[] players = playerName.split("\\s");
         playerName=players[players.length-1];
@@ -104,13 +122,9 @@ public class ChatBotTelegramDelegate {
 
 
         List<PlayerDTO> playerDTOList= playerInterface.getPlayerInfo(playerName,year);
-        PlayerDTO playerDTO = null;
 
-        if(playerDTOList!=null&&playerDTOList.size()>0){
-            playerDTO =playerDTOList.get(0);
-        }
 
-        return playerDTO;
+        return playerDTOList;
 
     }
 
