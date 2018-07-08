@@ -173,7 +173,7 @@ public class SeasonController {
 
 
             seasonInterface.loadMatches(matchContent);
-            seasonInterface.loadDeliveryDetails(deiveryContent);
+            seasonInterface.loadDeliveryDetails(deiveryContent,cprd.getFile());
             isLoadSuccessful = true;
             restResponse.setResponse("Loaded Successfully");
         }

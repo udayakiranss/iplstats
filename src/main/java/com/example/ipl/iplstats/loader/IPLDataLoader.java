@@ -15,8 +15,10 @@ import org.simpleflatmapper.csv.CsvParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -215,7 +217,7 @@ public class IPLDataLoader {
             }
         }
 
-        if(!found && name.length()>0){
+        if(!found && name.length()>0 && !name.endsWith("(sub)")){
             player = new Player();
             player.setName(name);
             player.setSeason(season);
@@ -325,5 +327,75 @@ public class IPLDataLoader {
     public List<MatchSummary> getSummaryList(){
         return new ArrayList<MatchSummary>(summaryMap.values());
     }
+
+
+    public List<MatchDetails> processInputFile(File inputFile) {
+        List<MatchDetails> inputList = new ArrayList<>();
+        try{
+//            File inputF = new File(inputFilePath);
+            InputStream inputFS = new FileInputStream(inputFile);
+            BufferedReader br = new BufferedReader(new InputStreamReader(inputFS));
+            // skip the header of the csv
+            inputList = br.lines().skip(1).map(mapToItem).collect(Collectors.toList());
+            br.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return inputList ;
+    }
+
+
+    private Function<String, MatchDetails> mapToItem = (line) -> {
+        String[] p = line.split(",");// a CSV has comma separated lines
+        String matchId = p[0];
+//        String battingTeam = p[2];
+//        String fieldingTeam = p[3];
+        String batsman = p[6];
+        String nonStriker = p[7];
+        String bowler = p[8];
+        String runs= p[15];
+        String dismissalKind = "";
+        String playerDismissed = "";
+        String fielder = "";
+        if(p.length > 18){
+            playerDismissed = p[18];
+        }
+        if(p.length > 19){
+            dismissalKind = p[19];
+        }
+        if(p.length > 20){
+            fielder = p[20];
+        }
+
+
+        MatchSummary summary = summaryMap.get(matchId);
+        if(summary!=null) {
+            Season season = summary.getSeason();
+            Team battingTeam = null;
+            Team fieldingTeam = null;
+            if (summary.getTeamA().getName().equals(p[2])) {
+                battingTeam = summary.getTeamA();
+                fieldingTeam = summary.getTeamB();
+            } else {
+                battingTeam = summary.getTeamB();
+                fieldingTeam = summary.getTeamA();
+            }
+
+            boolean dismissalType = isWicketToBowler(dismissalKind);
+
+            getPlayer(matchId, batsman, Integer.parseInt(runs), dismissalType, season, battingTeam, false);
+            getPlayer(matchId, nonStriker, 0, dismissalType, season, battingTeam, false);
+            getPlayer(matchId, bowler, 0, dismissalType, season, fieldingTeam, true);
+            getPlayer(matchId, fielder, 0, dismissalType, season, fieldingTeam, false);
+            getPlayer(matchId, playerDismissed, 0, dismissalType, season, battingTeam, false);
+        }
+        MatchDetails item = new MatchDetails();
+//        item.setItemNumber(p[0]);//<-- this is the first column in the csv file
+//        if (p[3] != null && p[3].trim().length() > 0) {
+//            item.setSomeProeprty(p[3]);
+//        }
+        //more initialization goes here
+        return item;
+    };
 
 }

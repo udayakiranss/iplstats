@@ -4,6 +4,7 @@ import com.example.ipl.iplstats.data.SeasonDTO;
 import com.example.ipl.iplstats.data.SeasonStatisticsDTO;
 import com.example.ipl.iplstats.exception.IPLStatException;
 
+import java.io.File;
 import java.util.List;
 
 public interface SeasonInterface {
@@ -14,7 +15,7 @@ public interface SeasonInterface {
 
     SeasonDTO getSeason(int year) throws IPLStatException;
 
-    void loadDeliveryDetails(String file) throws  IPLStatException;
+    void loadDeliveryDetails(String file,File filePath) throws  IPLStatException;
 
     void loadMatches(String file) throws  IPLStatException;
 
