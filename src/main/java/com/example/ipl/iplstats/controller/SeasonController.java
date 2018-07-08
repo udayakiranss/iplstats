@@ -163,7 +163,7 @@ public class SeasonController {
         try {
 
             ClassPathResource cpr = new ClassPathResource("matches.csv");
-            ClassPathResource cprd = new ClassPathResource("deliveries.csv");
+            ClassPathResource cprd = new ClassPathResource("deliveries-sample.csv");
 
             byte[] matchData = FileCopyUtils.copyToByteArray(cpr.getInputStream());
             String matchContent = new String(matchData, StandardCharsets.UTF_8);
@@ -302,6 +302,11 @@ public class SeasonController {
                 QueryResult queryResult = request.getQueryResult();
                 WebhookResponse.Builder responseBuilder = WebhookResponse.newBuilder();
                 responseBuilder.setFulfillmentText("Acknowledged the message");
+                String responseText="";
+                String playerBattingRecordText="";
+                String playerBowlingRecordText="";
+                String playerMatchesRecordText="";
+
 
                 if(request.getQueryResult().getAllRequiredParamsPresent()) {
                     Struct parameters = queryResult.getParameters();
@@ -329,12 +334,19 @@ public class SeasonController {
                     SeasonStatisticsDTO pointsDTO = seasonStatisticsDTOMap.get(seasonDTO);
 
 
-                    String responseText="";
+
                     if(statistics!=null && statistics.getStringValue()!=null&&statistics.getStringValue().equals("Details")){
                         List<PlayerDTO> playerDTOList= playerInterface.getPlayerInfo(playerName,year);
                         if(playerDTOList!=null&&playerDTOList.size()>0){
+                            String name = playerDTOList.get(0).getName();
+                            int noOfMatches = playerDTOList.get(0).getNoOfMatches();
+                            int seasonRuns = playerDTOList.get(0).getTotalRuns();
+                            int seasonWickets = playerDTOList.get(0).getTotalWickets();
+                            playerBattingRecordText = name  + " got " + seasonRuns + " wickets";
+                            playerBowlingRecordText = name  + " scored " + seasonRuns + " runs" ;
+                            playerMatchesRecordText = name  + " played " + noOfMatches + " matches"    ;
 
-                            responseText = playerDTOList.get(0).getName() + " played " + playerDTOList.get(0).getNoOfMatches()  +" and scored " + playerDTOList.get(0).getTotalRuns()  + " runs and got " + playerDTOList.get(0).getTotalWickets() +" wickets in season " + year;
+//                            responseText = name  + " played " + noOfMatches  +" and scored " + seasonRuns  + " runs and got " + seasonWickets +" wickets in season " + year;
                         }else{
                             responseText="Not a valid player in the season, Please send a valid player";
                         }
@@ -370,9 +382,41 @@ public class SeasonController {
                         }
 
                     }
+                    if(responseText.equals("")){
+                        responseBuilder.addFulfillmentMessages(
+                                Intent.Message.newBuilder()
+                                        .setText(Intent.Message.Text.newBuilder()
+                                                .addText(playerBattingRecordText)
+                                                .addText(playerBowlingRecordText)
+                                                .addText(playerMatchesRecordText)
+                                                .build())
+                                        .build()
+                        );
+                        responseBuilder.addFulfillmentMessages(
+                                Intent.Message.newBuilder().
+                                        setText(Intent.Message.Text.newBuilder()
+                                                .addText(responseText)
+                                                .addText("Try Line")
+                                                .addText("H")
+                                                .build())
+                                        .setText(Intent.Message.Text.newBuilder()
+                                                .addText(responseText)
+                                                .addText("kine")
+                                                .addText("JJJJ")
+                                                .build())
+                                        .build()
+                        );
+                    }else{
+                        responseBuilder.addFulfillmentMessages(
+                                Intent.Message.newBuilder()
+                                        .setText(Intent.Message.Text.newBuilder()
+                                                .addText(responseText)
+                                                .build())
+                                        .build()
+                        );
+                    }
 
-                    responseBuilder.addFulfillmentMessages(
-                            Intent.Message.newBuilder().setText(Intent.Message.Text.newBuilder().addText(responseText).build()).build());
+
 
                 }
                 responseBuilder.addAllOutputContexts(queryResult.getOutputContextsList());
