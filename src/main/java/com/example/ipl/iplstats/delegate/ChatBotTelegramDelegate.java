@@ -125,6 +125,12 @@ public class ChatBotTelegramDelegate {
                 PlayerDTO playerDTO1 = seasonInterface.purpleCapPlayer(seasonDTO);
                 answers.add(playerDTO1.getName() + " got the purple cap for getting "+ playerDTO1.getTotalWickets() + " wickets");
             }
+
+            if(statistics.getStringValue()!=null && statistics.getStringValue().length() >0 &&
+                    statistics.getStringValue().equals("Mom")){
+                String mom = pointsDTO.getPlayerOfMatch();
+                answers.add( mom + " was man of the match in finals of season " + year);
+            }
         }
 
         return answers;
