@@ -329,14 +329,13 @@ public class IPLDataLoader {
     }
 
 
-    public List<MatchDetails> processInputFile(File inputFile) {
+    public List<MatchDetails> processInputFile(InputStream inputStream) {
         List<MatchDetails> inputList = new ArrayList<>();
-        log.debug("File:", inputFile.getName());
         try{
 //            File inputF = new File(inputFilePath);
-            InputStream inputFS = new FileInputStream(inputFile);
+//            InputStream inputFS = new FileInputStream(inputFile);
             log.debug("File Exists");
-            BufferedReader br = new BufferedReader(new InputStreamReader(inputFS));
+            BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
             // skip the header of the csv
             inputList = br.lines().skip(1).map(mapToItem).collect(Collectors.toList());
             br.close();

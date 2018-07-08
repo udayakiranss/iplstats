@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 
 import javax.transaction.Transactional;
 import java.io.File;
+import java.io.InputStream;
 import java.util.*;
 
 @Component
@@ -116,7 +117,7 @@ public class SeasonInterfaceImpl implements SeasonInterface {
     }
 
     @Transactional
-    public void loadDeliveryDetails(String file, File filePath) throws IPLStatException{
+    public void loadDeliveryDetails(String file, InputStream filePath) throws IPLStatException{
 
 //        dataLoader.parseDeliveriesFile(file);
 
