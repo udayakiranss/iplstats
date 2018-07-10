@@ -168,12 +168,19 @@ public class ChatBotTelegramDelegate {
         String winner = pointsDTO.getWinner();
         String loser = pointsDTO.getLoser();
         String answer="";
+        String runsWickets ="";
+        if(pointsDTO.getRuns() == 0)
+            runsWickets = pointsDTO.getWickets() + " wickets";
+        else
+            runsWickets = pointsDTO.getRuns() + " runs";
+
         if(resultType.equals("won")){
-            answer = winner + " won the championship for season "
-                    + pointsDTO.getSeason();
+            answer = winner + " won the championship for season  "
+                    + pointsDTO.getSeason() + " beating " + pointsDTO.getLoser()
+            + " by " + runsWickets;
         }else if(resultType.equals("lost")){
             answer = loser + " lost the championship for season "
-                    + pointsDTO.getSeason();
+                    + pointsDTO.getSeason() + " to " + pointsDTO.getWinner() + " by " + runsWickets;
         }
         return  answer;
     }

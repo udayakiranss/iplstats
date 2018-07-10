@@ -24,4 +24,10 @@ public class SeasonStatisticsDTO {
 
     private String loser;
 
+    private int runs;
+
+    private  int wickets;
+
+    private PlayerDTO manOfTheMatch;
+
 }

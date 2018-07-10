@@ -157,6 +157,8 @@ public class SeasonInterfaceImpl implements SeasonInterface {
                     }else{
                         pointsDTO.setLoser(matchSummary.getTeamB().getName());
                     }
+                    pointsDTO.setRuns(matchSummary.getWinByRuns());
+                    pointsDTO.setWickets(matchSummary.getWinByWickets());
 
                 }
                 SeasonTeamPointsDTO teamAPointsDTO = new SeasonTeamPointsDTO(matchSummary.getTeamA().getName());
