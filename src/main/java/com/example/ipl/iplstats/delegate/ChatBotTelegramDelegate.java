@@ -129,7 +129,8 @@ public class ChatBotTelegramDelegate {
             if(statistics.getStringValue()!=null && statistics.getStringValue().length() >0 &&
                     statistics.getStringValue().equals("Mom")){
                 String mom = pointsDTO.getPlayerOfMatch();
-                answers.add( mom + " was man of the match in finals of season " + year);
+                answers.add( mom + " was man of the match in finals of season " + year + " by scoring " +pointsDTO.getManOfTheMatch().getTotalRuns()
+                        + " runs and taking " + pointsDTO.getManOfTheMatch().getTotalWickets()+ " wickets");
             }
         }
 
