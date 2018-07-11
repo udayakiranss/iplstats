@@ -1,6 +1,7 @@
 package com.example.ipl.iplstats.entity;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
 
@@ -12,6 +13,7 @@ import java.util.Set;
 @Entity
 @Data
 @ToString
+@EqualsAndHashCode(of = {"name","season","team"})
 @Table(uniqueConstraints={@UniqueConstraint(columnNames={"name","season_id","team_id"})})
 public class Player {
     @Id

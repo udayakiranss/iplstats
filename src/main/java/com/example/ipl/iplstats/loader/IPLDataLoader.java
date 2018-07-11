@@ -15,7 +15,10 @@ import org.simpleflatmapper.csv.CsvParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -39,10 +42,16 @@ public class IPLDataLoader {
     private Set<DeliveryDetailsDTO> deliveryInfoList=new HashSet<DeliveryDetailsDTO>();
     @Getter
     private List<MatchDetails> detailsList = new ArrayList<MatchDetails>();
+
+    @Getter
+    private Map<MatchSummary,Set<PlayerInnings>> summaryPlayerMap = new HashMap<MatchSummary, Set<PlayerInnings>>();
+
+
     @Autowired
     private MatchDAO matchDAO;
     @Autowired
     private ApplicationConfig config;
+
 
 
     public void parseMatches(String matchesFile)throws  IPLStatException{
@@ -130,8 +139,6 @@ public class IPLDataLoader {
                 String dismissalKind = deliveryDetails.getDismissal_kind();
                 if(!matchId.equals("match_id")){
 
-//                    summaryList.get
-//                    MatchSummary summary = matchDAO.getOne(new Long(deliveryDetails.getMatch_id()));
                     MatchSummary summary = summaryMap.get(matchId);
                     if(summary!=null) {
                         Season season = summary.getSeason();
@@ -153,21 +160,7 @@ public class IPLDataLoader {
                         getPlayer(matchId, deliveryDetails.getFielder(), 0, dismissalType, season, fieldingTeam,false);
                         getPlayer(matchId, deliveryDetails.getPlayer_dismissed(), 0, dismissalType, season, battingTeam,false);
 
-//                        MatchDetails matchDetails = mapper.deliveriesToMatchDetails(deliveryDetails);
-//                        boolean dismissalType = matchDetails.isWicketToBowler();
-//                        matchDetails.setMatchSummary(summary);
-//                        matchDetails.setBatsman(getPlayer(matchId, batsman, Integer.parseInt(runs), dismissalType, season, battingTeam,false));
-//                        matchDetails.setNonStriker(getPlayer(matchId, nonStriker, 0, dismissalType, season, battingTeam,false));
-//                        matchDetails.setBowler(getPlayer(matchId, bowler, 0, dismissalType, season, fieldingTeam,true));
-//                        matchDetails.setFielder(getPlayer(matchId, deliveryDetails.getFielder(), 0, dismissalType, season, fieldingTeam,false));
-//                        matchDetails.setPlayerDismissed(getPlayer(matchId,
-//                                deliveryDetails.getPlayer_dismissed(), 0, dismissalType, season, battingTeam,false));
-//
-//                        if(seasonsToBeLoaded.contains(summary.getSeason().getYear())){
-//                            detailsList.add(matchDetails);
-//                        }else{
-//                            matchDetails=null;
-//                        }
+
 
                     }
 
@@ -226,9 +219,6 @@ public class IPLDataLoader {
             players.add(player);
         }
 
-//        if(player.getName().equals("YS Chahal") && season.getYear().equals("2017")){
-//            kohli_Runs_2017+=runs;
-//        }
 
         player.addRuns(runs);
         if(isWicketToBowler && isBowler){
@@ -349,12 +339,20 @@ public class IPLDataLoader {
     private Function<String, MatchDetails> mapToItem = (line) -> {
         String[] p = line.split(",");// a CSV has comma separated lines
         String matchId = p[0];
+        int innings = Integer.parseInt(p[1]);
 //        String battingTeam = p[2];
 //        String fieldingTeam = p[3];
+//        int over = Integer.parseInt(p[4]);
+//        int ball = Integer.parseInt(p[5]);
         String batsman = p[6];
         String nonStriker = p[7];
         String bowler = p[8];
-        String runs= p[15];
+//        int wideRuns= Integer.parseInt(p[10]);
+//        int byes= Integer.parseInt(p[11]);
+//        int legByes= Integer.parseInt(p[12]);
+//        int noball= Integer.parseInt(p[13]);
+//        int totalRuns =Integer.parseInt(p[17]);
+        int batsmanRuns = Integer.parseInt(p[15]);
         String dismissalKind = "";
         String playerDismissed = "";
         String fielder = "";
@@ -368,8 +366,10 @@ public class IPLDataLoader {
             fielder = p[20];
         }
 
-
         MatchSummary summary = summaryMap.get(matchId);
+        MatchDetails matchDetails = new MatchDetails();
+
+
         if(summary!=null) {
             Season season = summary.getSeason();
             Team battingTeam = null;
@@ -382,21 +382,100 @@ public class IPLDataLoader {
                 fieldingTeam = summary.getTeamA();
             }
 
-            boolean dismissalType = isWicketToBowler(dismissalKind);
+            boolean isWicketToBowler = isWicketToBowler(dismissalKind);
 
-            getPlayer(matchId, batsman, Integer.parseInt(runs), dismissalType, season, battingTeam, false);
-            getPlayer(matchId, nonStriker, 0, dismissalType, season, battingTeam, false);
-            getPlayer(matchId, bowler, 0, dismissalType, season, fieldingTeam, true);
-            getPlayer(matchId, fielder, 0, dismissalType, season, fieldingTeam, false);
-            getPlayer(matchId, playerDismissed, 0, dismissalType, season, battingTeam, false);
+            Player batPlayer = getPlayer(matchId, batsman, batsmanRuns, isWicketToBowler, season, battingTeam, false);
+                getPlayer(matchId, nonStriker, 0, isWicketToBowler, season, battingTeam, false);
+            Player bowlerPlayer = getPlayer(matchId, bowler, 0, isWicketToBowler, season, fieldingTeam, true);
+            Player fielderPlayer = getPlayer(matchId, fielder, 0, isWicketToBowler, season, fieldingTeam, false);
+            getPlayer(matchId, playerDismissed, 0, isWicketToBowler, season, battingTeam, false);
+
+
+
+            PlayerInnings batsmanInnings = getPlayerInnings(batPlayer,summary,innings);
+            PlayerInnings bowlerInnings = getPlayerInnings(bowlerPlayer,summary,innings);
+            PlayerInnings fielderInnings = getPlayerInnings(fielderPlayer,summary,innings);
+
+            batsmanInnings.incrementBalls();
+            batsmanInnings.addRuns(batsmanRuns);
+
+            if(batsmanRuns==6){
+                batsmanInnings.incrementSixers();
+            }else  if(batsmanRuns==4){
+                batsmanInnings.incrementBoundaries();
+            }
+            if(isWicketToBowler)
+                bowlerInnings.incrementWickets();
+
+            if(!fielder.equals("")){
+                fielderInnings.incrementCatches();
+            }
+
+
+//            matchDetails.setMatchSummary(summary);
+//            matchDetails.setBatsman(getPlayer(matchId, batsman, batsmanRuns, isWicketToBowler, season, battingTeam, false));
+//            matchDetails.setNonStriker(getPlayer(matchId, nonStriker, 0, isWicketToBowler, season, battingTeam, false));
+//            matchDetails.setBowler(getPlayer(matchId, bowler, 0, isWicketToBowler, season, fieldingTeam, true));
+//            matchDetails.setFielder(getPlayer(matchId, fielder, 0, isWicketToBowler, season, fieldingTeam, false));
+//            matchDetails.setPlayerDismissed(getPlayer(matchId, playerDismissed, 0, isWicketToBowler, season, battingTeam, false));
+//            matchDetails.setBall(ball);
+//            matchDetails.setOver(over);
+//            matchDetails.setByeRuns(byes);
+//            matchDetails.setLegbyeRuns(legByes);
+//            matchDetails.setWideRuns(wideRuns);
+//            matchDetails.setNoballRuns(noball);
+//            matchDetails.setTotalRuns(totalRuns);
+
+
         }
-        MatchDetails item = new MatchDetails();
-//        item.setItemNumber(p[0]);//<-- this is the first column in the csv file
-//        if (p[3] != null && p[3].trim().length() > 0) {
-//            item.setSomeProeprty(p[3]);
-//        }
-        //more initialization goes here
-        return item;
+
+        return matchDetails;
     };
+
+
+
+    private PlayerInnings getPlayerInnings(Player player, MatchSummary summary, int innings){
+        PlayerInnings playerInnings = new PlayerInnings();
+        playerInnings.setPlayer(player);
+        playerInnings.setSummary(summary);
+//        boolean found = false;
+        Set<PlayerInnings> summeryPlayers = summaryPlayerMap.get(summary);
+        if(summeryPlayers!=null && summeryPlayers.size() >0 ){
+            boolean found = summeryPlayers.contains(playerInnings);
+            if(!found ){
+                playerInnings=null;
+                playerInnings = new PlayerInnings();
+                playerInnings.setPlayer(player);
+                playerInnings.setSummary(summary);
+                playerInnings.setInnings(innings);
+                summeryPlayers.add(playerInnings);
+            }else{
+                Iterator<PlayerInnings> playerInningsIterator = summeryPlayers.iterator();
+
+                while(playerInningsIterator.hasNext()){
+                    PlayerInnings next = playerInningsIterator.next();
+                    if(next.getPlayer().equals(player) &&  next.getSummary().equals(summary)){
+                        playerInnings=null;
+                        playerInnings = next;
+                        break;
+                    }
+                }
+            }
+
+        }else{
+            summeryPlayers = new HashSet<PlayerInnings>();
+            playerInnings=null;
+            playerInnings = new PlayerInnings();
+            playerInnings.setPlayer(player);
+            playerInnings.setSummary(summary);
+            playerInnings.setInnings(innings);
+            summeryPlayers.add(playerInnings);
+            summaryPlayerMap.put(summary,summeryPlayers);
+
+        }
+
+
+        return playerInnings;
+    }
 
 }

@@ -28,6 +28,6 @@ public class SeasonStatisticsDTO {
 
     private  int wickets;
 
-    private PlayerDTO manOfTheMatch;
+    private PlayerInningsDTO manOfTheMatch;
 
 }

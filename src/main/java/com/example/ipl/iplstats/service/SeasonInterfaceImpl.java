@@ -5,6 +5,7 @@ import com.example.ipl.iplstats.data.*;
 import com.example.ipl.iplstats.entity.*;
 import com.example.ipl.iplstats.exception.IPLStatException;
 import com.example.ipl.iplstats.loader.IPLDataLoader;
+import com.example.ipl.iplstats.mapper.PlayerInningsMapper;
 import com.example.ipl.iplstats.mapper.SeasonMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
@@ -25,6 +26,7 @@ public class SeasonInterfaceImpl implements SeasonInterface {
     List<SeasonDTO> seasonList = new ArrayList<SeasonDTO>();
 
     private  final SeasonMapper mapper = Mappers.getMapper(SeasonMapper.class);
+    private  final PlayerInningsMapper inningsMapper = Mappers.getMapper(PlayerInningsMapper.class);
     @Autowired
     private SeasonDAO seasonRepo;
     @Autowired
@@ -36,9 +38,11 @@ public class SeasonInterfaceImpl implements SeasonInterface {
     @Autowired
     private PlayerDAO playerDAO;
     @Autowired
+    private PlayerInningsDAO playerInningsDAO;
+    @Autowired
     private IPLDataLoader dataLoader;
-    @Getter
-    private Set<SeasonTeamPointsDTO> teamPoints = new HashSet<SeasonTeamPointsDTO>();
+//    @Getter
+//    private Set<SeasonTeamPointsDTO> teamPoints1 = new HashSet<SeasonTeamPointsDTO>();
 
 
     @Override
@@ -127,14 +131,19 @@ public class SeasonInterfaceImpl implements SeasonInterface {
         Iterable<Player> players = dataLoader.getPlayers();
         playerDAO.save(players);
 
-        Iterable<MatchDetails> detailsList = dataLoader.getDetailsList();
-        matchDetailsDAO.save(detailsList);
+//        Iterable<PlayerInnings> detailsList = dataLoader.getPlayerInningsSet();
+        Map<MatchSummary, Set<PlayerInnings>> map = dataLoader.getSummaryPlayerMap();
+        map.forEach((summary, playerInnings) -> {
+            playerInningsDAO.save(playerInnings);
+        });
+
+
 
     }
 
     public SeasonStatisticsDTO fetchPointsTable(SeasonDTO seasonDTO)throws IPLStatException{
         SeasonStatisticsDTO pointsDTO = new SeasonStatisticsDTO();
-
+        Set<SeasonTeamPointsDTO> teamPoints = new HashSet<SeasonTeamPointsDTO>();
 
         int year = seasonDTO.getYear();
         pointsDTO.setSeason(year);
@@ -152,6 +161,8 @@ public class SeasonInterfaceImpl implements SeasonInterface {
                 if(matchCounter == summaries.size()){
                     pointsDTO.setWinner(matchSummary.getWinner().getName());
                     pointsDTO.setPlayerOfMatch(matchSummary.getPlayerOfMatch());
+                    pointsDTO.setManOfTheMatch(getManOfTheMatchDetails(matchSummary.getPlayerOfMatch(),
+                            season,matchSummary));
                     if(matchSummary.getTeamB().getName().equals(matchSummary.getWinner().getName())){
                         pointsDTO.setLoser(matchSummary.getTeamA().getName());
                     }else{
@@ -159,6 +170,7 @@ public class SeasonInterfaceImpl implements SeasonInterface {
                     }
                     pointsDTO.setRuns(matchSummary.getWinByRuns());
                     pointsDTO.setWickets(matchSummary.getWinByWickets());
+//                    matchSummary.getI
 
                 }
                 SeasonTeamPointsDTO teamAPointsDTO = new SeasonTeamPointsDTO(matchSummary.getTeamA().getName());
@@ -173,8 +185,8 @@ public class SeasonInterfaceImpl implements SeasonInterface {
                         SeasonTeamPointsDTO next = teamPointsDTOIterator.next();
                         if(result!=null && next.getTeamName().equals(matchSummary.getTeamA().getName())
                                 || next.getTeamName().equals(matchSummary.getTeamB().getName())){
-                            boolean success = next.incrementMatches();
-                            if(success){
+                            boolean leagueMatch = next.incrementMatches();
+                            if(leagueMatch){
                                 if((result.equals(MatchResult.NORMAL.getResult())
                                         ||result.equals(MatchResult.TIE.getResult())) &&
                                         next.getTeamName().equals(matchSummary.getWinner().getName())) {
@@ -231,4 +243,15 @@ public class SeasonInterfaceImpl implements SeasonInterface {
     }
 
 
+    private PlayerInningsDTO getManOfTheMatchDetails(String playerName,Season season,MatchSummary summary) {
+
+        Optional<Player> player = playerDAO.findByNameAndSeason(playerName,season);
+        PlayerInningsDTO manOfTheMatchDetails = null;
+        if(player.isPresent()){
+            PlayerInnings playerInnings = playerInningsDAO.findByPlayerAndSummary(player.get(),summary);
+            manOfTheMatchDetails=inningsMapper.playerToPlayerDTO(playerInnings);
+        }
+
+        return manOfTheMatchDetails;
+    }
 }

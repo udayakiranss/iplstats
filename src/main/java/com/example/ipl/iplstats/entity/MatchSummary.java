@@ -1,6 +1,7 @@
 package com.example.ipl.iplstats.entity;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
@@ -9,6 +10,7 @@ import java.util.Date;
 @Entity
 @Data
 @NoArgsConstructor
+@EqualsAndHashCode(of = "matchID")
 @Table(name = "MATCH_SUMMARY")
 public class MatchSummary {
     @Id

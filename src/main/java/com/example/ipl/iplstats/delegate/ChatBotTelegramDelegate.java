@@ -3,7 +3,6 @@ package com.example.ipl.iplstats.delegate;
 import com.example.ipl.iplstats.data.PlayerDTO;
 import com.example.ipl.iplstats.data.SeasonDTO;
 import com.example.ipl.iplstats.data.SeasonStatisticsDTO;
-import com.example.ipl.iplstats.entity.Season;
 import com.example.ipl.iplstats.exception.IPLStatException;
 import com.example.ipl.iplstats.service.PlayerInterface;
 import com.example.ipl.iplstats.service.SeasonInterface;
@@ -55,7 +54,8 @@ public class ChatBotTelegramDelegate {
             if(statistics.getStringValue()!=null && statistics.getStringValue().length() >0 &&
                     statistics.getStringValue().equals("Mom")){
                 String mom = pointsDTO.getPlayerOfMatch();
-                answers.add( mom + " was man of the match in finals of season " + year);
+                answers.add( mom + " was man of the match in finals of season " + year + " by scoring " +pointsDTO.getManOfTheMatch().getTotalRuns()
+                                + " runs and taking " + pointsDTO.getManOfTheMatch().getTotalWickets()+ " wickets");
                 PlayerDTO orangeCapPlayer = seasonInterface.orangeCapPlayer(seasonDTO);
                 answers.add(orangeCapPlayer.getName() + " got the orange cap for scoring "+ orangeCapPlayer.getTotalRuns() + " runs");
                 PlayerDTO purpleCapPlayer = seasonInterface.purpleCapPlayer(seasonDTO);

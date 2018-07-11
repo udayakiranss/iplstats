@@ -6,12 +6,22 @@ import lombok.Setter;
 import lombok.ToString;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 @Component
 @Getter
 @Setter
 @EqualsAndHashCode()
 @ToString
 public class MatchDetailsDTO {
+
+
+    private Map<Integer, MatchInningsDTO> inningsDTOSet = new HashMap<Integer,MatchInningsDTO>();
+
+
 
     private Long id;
     private Long matchID;
@@ -36,5 +46,22 @@ public class MatchDetailsDTO {
     private String dismissalKind;
     private String fielder;
 
+
+
+    public void addFirstInnings(MatchInningsDTO inningsDTO){
+        inningsDTOSet.put(1,inningsDTO);
+    }
+
+    public void addSecondInnings(MatchInningsDTO inningsDTO){
+        inningsDTOSet.put(2,inningsDTO);
+    }
+
+    public MatchInningsDTO getFirstInnings(){
+        return inningsDTOSet.get(1);
+    }
+
+    public MatchInningsDTO getSecondInnings(){
+        return inningsDTOSet.get(2);
+    }
 
 }
