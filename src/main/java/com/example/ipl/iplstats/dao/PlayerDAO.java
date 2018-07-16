@@ -31,4 +31,10 @@ public interface PlayerDAO extends JpaRepository<Player, Long> {
 
     @Query(value = "select name, max(TOTAL_wickets ) from PLAYER where season_id=?1 group by name order by total_wickets desc limit 1\n",nativeQuery = true)
     List<Object[]>  findByMaxWickets(Long seasonId);
+
+    @Query(value = "SELECT sum(TOTAL_RUNS ),sum(TOTAL_WICKETS ) FROM PLAYER where name like ?1",nativeQuery = true)
+    List<Object[]>  findByStats(String playerName);
+
+    @Query(value = "SELECT sum(TOTAL_RUNS ),sum(TOTAL_WICKETS ) FROM PLAYER where name like ?1 and SEASON_ID=?2 ",nativeQuery = true)
+    List<Object[]>  findBySeasonStats(String playerName,Long seasonId);
 }

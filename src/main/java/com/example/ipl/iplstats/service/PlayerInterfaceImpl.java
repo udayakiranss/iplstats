@@ -15,6 +15,7 @@ import org.mapstruct.factory.Mappers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
@@ -102,6 +103,39 @@ public class PlayerInterfaceImpl implements PlayerInterface {
             throw new IPLStatException("IPL100","Player Not found");
         }
         return playerDTOList;
+    }
+
+    @Override
+    public PlayerDTO getPlayerStatistics(String playerName, Long seasonId) throws IPLStatException {
+
+        if(seasonId ==null){
+            List<Object[]> object = playerDAO.findByStats("%"+playerName);
+            if(object!=null && object.size() >= 1){
+                Object[] statArray = object.get(0);
+                BigInteger totalRuns = (BigInteger)statArray[0];
+                BigInteger totalWickets = (BigInteger)statArray[1];
+                PlayerDTO playerDTO = new PlayerDTO();
+                playerDTO.setTotalWickets(totalWickets.intValue());
+                playerDTO.setTotalRuns(totalRuns.intValue());
+                playerDTO.setName(playerName);
+                return playerDTO;
+            }
+        }else{
+            List<Object[]> object = playerDAO.findBySeasonStats("%"+playerName,seasonId);
+            if(object!=null && object.size() >= 1){
+                Object[] statArray = object.get(0);
+                BigInteger totalRuns = (BigInteger)statArray[0];
+                BigInteger totalWickets = (BigInteger)statArray[1];
+                PlayerDTO playerDTO = new PlayerDTO();
+                playerDTO.setTotalWickets(totalWickets.intValue());
+                playerDTO.setTotalRuns(totalRuns.intValue());
+                playerDTO.setName(playerName);
+                return playerDTO;
+            }
+        }
+
+
+        return null;
     }
 
     @Override

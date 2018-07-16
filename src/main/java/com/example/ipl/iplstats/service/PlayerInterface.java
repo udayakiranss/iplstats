@@ -14,6 +14,10 @@ public interface PlayerInterface {
 
     List<PlayerDTO> getPlayerList(String teamName,int season) throws IPLStatException;
 
+    PlayerDTO getPlayerStatistics(String playerName,Long seasonId) throws IPLStatException;
+
+
+
 
     boolean isPlayerValid(String name, String team, SeasonDTO seasonDTO) throws IPLStatException;
 }
