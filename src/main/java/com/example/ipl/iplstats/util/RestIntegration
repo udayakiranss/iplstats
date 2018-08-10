@@ -1,0 +1,548 @@
+package com.example.ipl.iplstats.util;
+
+import com.example.ipl.iplstats.exception.IPLStatException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.http.HttpHost;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.config.Registry;
+import org.apache.http.config.RegistryBuilder;
+import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.TrustStrategy;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.mapstruct.Named;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.RestTemplate;
+
+import javax.annotation.PostConstruct;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * Created by kiranuda on 8/10/2018.
+ */
+@Slf4j
+public class RestIntegration {
+
+    @Value("${connect-timeout}")
+    private int connectTimeout;
+
+    @Value("${read-timeout}")
+    private int readTimeout;
+    /*@Value("${certificate-password}")
+    private String certificatePassword;*/
+
+    @Value("${certificate-names}")
+    private String allowedCertificateDomains;
+
+    private String[] allowedCertificates;
+
+    private final String KEY_STORE_NAME = "RR-RA-KEY_STORE";
+    private final String CERTIFICATE_ALIAS_NAME = "RR-RA-intcert";
+    // private final String PASSWORD = "$3cr3t";
+    //private final String certificateCommonName = "*.modeloncloud.com";
+    //private final String certificateCommonName = "*.vz.altidev.net";
+
+    private String proxyHostName;
+    private int proxyPort;
+    private String proxyUserName;
+    private String proxyPassword;
+    private volatile Map<String, Boolean> certificatesDownloaded = new HashMap<>();
+    private ObjectMapper objectMapper = new ObjectMapper();
+    private HttpClientBuilder clientBuilder = null;
+    private RequestConfig clientConfig = null;
+    private RestTemplate restTemplate = new RestTemplate();
+    private RestTemplate restTemplateLocalhost = new RestTemplate();
+
+    public RestIntegration() {
+        super();
+    }
+
+    @PostConstruct
+    public void configureProxyAndInitializeRestTemplate() {
+        String proxyHostName = System.getProperty("proxyHostName");
+        String proxyPort = System.getProperty("proxyPort");
+        String proxyUsername = System.getProperty("proxyUsername");
+        String proxyPassword = System.getProperty("proxyPassword");
+        if(StringUtils.isNotEmpty(proxyHostName) && StringUtils.isNotEmpty(proxyPort)) {
+            this.proxyHostName = proxyHostName;
+            this.proxyPort = Integer.parseInt(proxyPort);
+            if(StringUtils.isNotEmpty(proxyUsername) && StringUtils.isNotEmpty(proxyPassword)) {
+                this.proxyUserName = proxyUsername;
+                this.proxyPassword = proxyPassword;
+            }
+        }
+        allowedCertificates = Arrays.stream(allowedCertificateDomains.split(",")).map(item -> item.trim()).toArray(String[]::new);
+        initializeRestTemplate();
+    }
+
+    public class AllHostnameVerifier implements HostnameVerifier {
+        @Override
+        public boolean verify(String s, SSLSession sslSession) {
+            return true;
+        }
+    }
+
+//    public class CustomTrustStrategy implements TrustStrategy {
+//        @Override
+//        public boolean isTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
+//            return Arrays.stream(x509Certificates).anyMatch(cert -> StringUtils.containsAny(cert.getSubjectDN().getName(), allowedCertificates));
+//        }
+//    }
+
+    public void initializeRestTemplate() {
+        SSLContext sslContext = null;
+//        try {
+//            sslContext = new SSLContextBuilder()
+//                    .loadTrustMaterial(null, new CustomTrustStrategy()).build();
+//        } catch (NoSuchAlgorithmException e) {
+//            e.printStackTrace();
+//        } catch (KeyManagementException e) {
+//            e.printStackTrace();
+//        } catch (KeyStoreException e) {
+//            e.printStackTrace();
+//        }
+        // SSLContexts.createDefault();
+        SSLConnectionSocketFactory sslSocketFactory = new SSLConnectionSocketFactory(sslContext, new AllHostnameVerifier());
+        Registry<ConnectionSocketFactory> socketFactoryRegistry = RegistryBuilder.<ConnectionSocketFactory>create()
+                .register("http", PlainConnectionSocketFactory.getSocketFactory())
+                .register("https", sslSocketFactory)
+                .build();
+        PoolingHttpClientConnectionManager connectionManager = new PoolingHttpClientConnectionManager(socketFactoryRegistry);
+        HttpHost httpHost = null;
+        if(this.proxyHostName != null) {
+            httpHost = new HttpHost(proxyHostName, proxyPort, "http");
+        }
+        /*CredentialsProvider credentialProvider = new BasicCredentialsProvider();
+        Credentials credentials = new UsernamePasswordCredentials("repvenk", "!Lkj333!");
+        credentialProvider.setCredentials(new AuthScope(httpHost), credentials);*/
+        RequestConfig clientConfig = RequestConfig.custom().setConnectTimeout(this.connectTimeout)
+                .setSocketTimeout(this.readTimeout)
+                .setConnectionRequestTimeout(this.readTimeout).build();
+        CloseableHttpClient httpClient = HttpClients.custom()
+                .setDefaultRequestConfig(clientConfig)
+                .setProxy(httpHost)
+                // .setDefaultCredentialsProvider(credentialProvider)
+                // .setSSLHostnameVerifier(new AllHostnameVerifier())
+                .setConnectionManager(connectionManager)
+                // .setSSLContext(sslContext)
+                // .setSSLSocketFactory(new SSLSocketFactory(new CustomTrustStrategy(), new AllHostnameVerifier()))
+                // .setSSLSocketFactory()
+                .build();
+        HttpComponentsClientHttpRequestFactory httpClientRequestFactory = new HttpComponentsClientHttpRequestFactory();
+        httpClientRequestFactory.setHttpClient(httpClient);
+        this.restTemplate.setRequestFactory(httpClientRequestFactory);
+    }
+
+    private HttpHeaders generateHeaders(String authToken) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.add("Authorization", authToken);
+        return headers;
+    }
+
+    private HttpHeaders generateRAHeaders(String authToken) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.add("authToken", authToken);
+        return headers;
+    }
+
+    public <I, R> R execute(String restURL, I input, String customAuthToken, Class<R> responseType) throws IPLStatException {
+        log.error("customAuthToken : {}", customAuthToken);
+        // TODO: validation
+        // validate(odsUrl, customAuthToken, input);
+        log.debug("Validation successful");
+        HttpHeaders headers = generateHeaders(customAuthToken);
+        log.debug("Headers generated");
+        try {
+            final HttpEntity<I> request = new HttpEntity<>(input, headers);
+            log.debug("Posting data to {}", restURL);
+            log.info("Request Data: \n" + objectMapper.writeValueAsString(input));
+            log.debug("Response from {}", restURL);
+            R restResponse = postForObject(restURL, request, responseType);
+            // R restResponse = restTemplate.postForObject(restURL, request, responseType);
+            log.info("Response Data: \n" + objectMapper.writeValueAsString(restResponse));
+            return restResponse;
+        } catch (HttpServerErrorException e){
+            log.error("Exception", e);
+            if(e.getStatusCode().value() == 502){
+                throw new IPLStatException("1212",e);
+            }
+            throw new IPLStatException("1212",e);
+        }catch(Exception e) {
+            log.error("Exception", e);
+            throw new IPLStatException("1212",e);
+        }
+    }
+
+    public <I, R> R executeRA(String restURL, I input, String authToken, Class<R> responseType) throws IPLStatException {
+        log.error("customAuthToken : {}", authToken);
+        // TODO: validation
+        // validate(odsUrl, customAuthToken, input);
+        log.debug("Validation successful");
+        HttpHeaders headers = generateRAHeaders(authToken);
+        log.debug("Headers generated");
+        try {
+            final HttpEntity<I> request = new HttpEntity<>(input, headers);
+            log.debug("Posting data to {}", restURL);
+            log.info("Request Data: \n" + objectMapper.writeValueAsString(input));
+            log.debug("Response from {}", restURL);
+            R restResponse = postForObject(restURL, request, responseType);
+            log.info("Response Data: \n" + objectMapper.writeValueAsString(restResponse));
+            return restResponse;
+        } catch (HttpServerErrorException e){
+            log.error("Exception", e);
+            if(e.getStatusCode().value() == 502){
+                throw new IPLStatException("ds", e);
+            }
+            throw new IPLStatException("231", e);
+        } catch(Exception e) {
+            log.error("Exception", e);
+            throw new IPLStatException("23e", e);
+        }
+    }
+
+    private <R> R postForObject(String restURL, HttpEntity request, Class<R> responseType) {
+        R restResponse = null;
+        if(restURL.startsWith("https")) {
+            restResponse = restTemplate.postForObject(restURL, request, responseType);
+        } else {
+            restResponse = restTemplateLocalhost.postForObject(restURL, request, responseType);
+        }
+        return restResponse;
+    }
+
+    /*private void downloadAndInstallCertificate(String odsUrl, String certificateCommonName, RestTemplate restTemplate) throws CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException, KeyManagementException, UnrecoverableKeyException {
+        *//*FileOutputStream fileOutputStream;
+        FileInputStream fileInputStream;*//*
+        //Download certificates start
+        TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
+            public X509Certificate[] getAcceptedIssuers() {
+                return null;
+            }
+            public void checkClientTrusted(X509Certificate[] certs, String authType) {
+            }
+            public void checkServerTrusted(X509Certificate[] certs, String authType) {
+            }
+        } };
+
+        Proxy proxy = null;
+        HttpHost httpHost = null;
+        //CredentialsProvider credentialsProvider = null;
+        // **************** Uncomment this if block if you want to use in development environment **********************
+      *//*  if(StringUtils.isNotEmpty(proxyHostName)) {
+            proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHostName, proxyPort));
+            log.debug("Proxy created with Host: {} and Port: {}", proxyHostName, proxyPort);
+            httpHost = new HttpHost(proxyHostName, proxyPort, "http");
+            log.debug("Http Host for client factory created successfully");
+        }*//*
+
+        if(StringUtils.isNotEmpty(proxyUserName)) {
+            Authenticator authenticator = new Authenticator() {
+
+                public PasswordAuthentication getPasswordAuthentication() {
+                    return (new PasswordAuthentication(proxyUserName,
+                            proxyPassword.toCharArray()));
+                }
+            };
+            Authenticator.setDefault(authenticator);
+            log.debug("Authenticator created with user name {} and password {}", proxyUserName, "******");
+            *//*credentialsProvider = new BasicCredentialsProvider();
+            credentialsProvider.setCredentials(new AuthScope(proxyHostName, proxyPort),
+                    new UsernamePasswordCredentials(proxyUserName, proxyPassword));*//*
+        }
+
+        final SSLContext sc = SSLContext.getInstance("SSL");
+        sc.init(null, trustAllCerts, new SecureRandom());
+        HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+        HostnameVerifier allHostsValid = new HostnameVerifier() {
+            public boolean verify(String s, SSLSession sslSession) {
+                return true;
+            }
+        };
+        HttpsURLConnection.setDefaultHostnameVerifier(allHostsValid);
+        URL destinationURL = new URL(odsUrl);
+
+        HttpsURLConnection conn = (HttpsURLConnection)(proxy == null ? destinationURL.openConnection() : destinationURL.openConnection(proxy));
+        conn.connect();
+        log.debug("Connection created to download certificates");
+        ByteArrayInputStream arrayInputStream = null;
+        Certificate[] certs = conn.getServerCertificates();
+        String subjectDNName = null;
+        for(Certificate cert: certs) {
+            log.debug("Certificate type {}", cert.getType());
+            log.debug("Certificate name {}", cert.getClass().getName());
+        }
+        for(Certificate cert: certs) {
+            if (cert instanceof X509Certificate) {
+                subjectDNName = ((X509CertImpl) certs[0]).getSubjectDN().getName();
+                if(subjectDNName.contains(certificateCommonName)) {
+                    arrayInputStream = new ByteArrayInputStream(cert.getEncoded());
+                    log.debug("Certificate downloaded and converted to Input Stream");
+                    break;
+                }
+
+            }
+        }
+        //Download certificates end
+
+        //store into keystore start
+        char sep = File.separatorChar;
+        KeyStore ks = KeyStore.getInstance("JKS");
+        log.debug("Opened keystore");
+        ks.load( null, null );
+        BufferedInputStream bis = new BufferedInputStream(arrayInputStream);
+        CertificateFactory cf = CertificateFactory.getInstance("X.509");
+        log.debug("Certificate factory instance is loaded");
+        Certificate cert = null;
+        while ( bis.available() > 0 )
+        {
+            cert = cf.generateCertificate( bis );
+            ks.setCertificateEntry(CERTIFICATE_ALIAS_NAME, cert );
+        }
+        try(FileOutputStream fileOutputStream = new FileOutputStream(KEY_STORE_NAME);){
+            ks.setCertificateEntry(CERTIFICATE_ALIAS_NAME, cert );
+            log.debug("Certificate added to keystore");
+
+            ks.store(fileOutputStream, certificatePassword.toCharArray());
+            log.debug("Closed keystore");
+        }
+
+        //store into keystore end
+        File file = new File(KEY_STORE_NAME);
+        KeyStore trustStore = null;
+        try(FileInputStream fileInputStream = new FileInputStream(file);){
+            trustStore  = KeyStore.getInstance(KeyStore.getDefaultType());
+            trustStore.load(fileInputStream, certificatePassword.toCharArray());
+        }
+        log.debug("Added to trust store");
+
+        SSLContext sslContext = SSLContexts.custom()
+                .loadKeyMaterial(trustStore, certificatePassword.toCharArray()).loadTrustMaterial(trustStore, new CustomTrustStrategy()).build();
+        log.debug("SSL context is created");
+        SSLConnectionSocketFactory csf = new SSLConnectionSocketFactory(sslContext);
+        log.debug("SSL connection factory is created");
+
+        //CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(csf).setProxy(httpHost).setDefaultCredentialsProvider(credentialsProvider).setProxyAuthenticationStrategy(new ProxyAuthenticationStrategy()).build();
+        clientBuilder = HttpClients.custom().setSSLSocketFactory(csf);
+        log.debug("HTTP Client Builder is created");
+        if(httpHost != null) {
+            clientBuilder.setProxy(httpHost);
+            log.debug("Proxy is set to HTTP Client Builder");
+        }
+        //CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(csf).setProxy(httpHost).build();
+        RequestConfig clientConfig = RequestConfig.custom().setConnectTimeout(connectTimeout).setSocketTimeout(readTimeout).setConnectionRequestTimeout(readTimeout).build();
+        this.clientConfig = clientConfig;
+        clientBuilder.setDefaultRequestConfig(clientConfig);
+        CloseableHttpClient httpClient = clientBuilder.build();
+        log.debug("Http Client is created");
+
+        HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
+        if(connectTimeout != 0) {
+            requestFactory.setConnectTimeout(connectTimeout);
+        }
+        if(readTimeout != 0) {
+            requestFactory.setReadTimeout(readTimeout);
+        }
+
+        requestFactory.setHttpClient(httpClient);
+        file.delete();
+        restTemplate.setRequestFactory(requestFactory);
+    }
+
+    public void setRequestFactoryForInvocation(String odsUrl, String certificateCommonName, RestTemplate restTemplate) throws SystemException {
+        if(odsUrl.startsWith("https")) {
+          *//*  if(!certificatesDownloaded.containsKey(odsUrl)) {*//*
+                try {
+                    synchronized (certificatesDownloaded) {
+                        if(!certificatesDownloaded.containsKey(odsUrl)) {
+                            downloadAndInstallCertificate(odsUrl, certificateCommonName, restTemplate);
+                        }
+                    }
+                    certificatesDownloaded.put(odsUrl, Boolean.TRUE);
+                } catch (CertificateException e) {
+                    log.error("Certificate Exception", e);
+                    throw new SystemException(BusinessExceptionCodes.EDGE033, e);
+                } catch (NoSuchAlgorithmException e) {
+                    log.error("NoSuchAlgorithmException Exception", e);
+                    throw new SystemException(BusinessExceptionCodes.EDGE034, e);
+                } catch (KeyStoreException e) {
+                    log.error("KeyStoreException Exception", e);
+                    throw new SystemException(BusinessExceptionCodes.EDGE035, e);
+                } catch (IOException e) {
+                    log.error("IOException Exception", e);
+                    throw new SystemException(BusinessExceptionCodes.ODS031, e);
+                } catch (KeyManagementException e) {
+                    log.error("KeyManagementException Exception", e);
+                    throw new SystemException(BusinessExceptionCodes.EDGE036, e);
+                } catch (UnrecoverableKeyException e) {
+                    log.error("UnrecoverableKeyException Exception", e);
+                    throw new SystemException(BusinessExceptionCodes.EDGE037, e);
+                } catch (Exception e) {
+                    log.error("Exception", e);
+                    throw new SystemException(BusinessExceptionCodes.EDGE032, e);
+                }
+         *//*   }*//*
+        }
+        else {
+            if(restTemplate.getRequestFactory() == null) {
+                CloseableHttpClient httpClient = HttpClients.createDefault();
+                HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory();
+                requestFactory.setHttpClient(httpClient);
+                restTemplate.setRequestFactory(requestFactory);
+            }
+        }
+    }*/
+    // **************** Uncomment this if block if you want to use in development environment **********************
+   /* private String getRuntimeCredentials() {
+        String username = "admin";
+        String pwd = "admin";
+        String plainCreds = username + ":" + pwd;
+        byte[] plainCredsBytes = plainCreds.getBytes();
+        byte[] base64CredsBytes = Base64.encodeBase64(plainCredsBytes);
+        return new String(base64CredsBytes);
+    }*/
+
+    /*public void setRaUrl(String odsUrl) {
+        this.odsUrl = odsUrl;
+    }
+
+    public void setAuthToken(String authToken) {
+        this.authToken = authToken;
+    }*/
+
+    public void setProxyHostName(String proxyHostName) {
+        this.proxyHostName = proxyHostName;
+    }
+
+    public void setProxyPort(int proxyPort) {
+        this.proxyPort = proxyPort;
+    }
+
+    public void setProxyUserName(String proxyUserName) {
+        this.proxyUserName = proxyUserName;
+    }
+
+    public void setProxyPassword(String proxyPassword) {
+        this.proxyPassword = proxyPassword;
+    }
+
+    public int getConnectTimeout() {
+        return connectTimeout;
+    }
+
+    public void setConnectTimeout(int connectTimeout, RestTemplate restTemplate) {
+        this.connectTimeout = connectTimeout*1000;
+    }
+
+    public int getReadTimeout() {
+        return readTimeout;
+    }
+
+    public void setReadTimeout(int readTimeout, RestTemplate restTemplate) {
+        this.readTimeout = readTimeout*1000;
+    }
+
+    /*public static void validateArgs(String... args) {
+        if(args.length < 3) {
+            System.out.println("arg[0] is runtime url, arg[1] is authtoken and arg[2] is input json path");
+            System.exit(0);
+        }
+    }*/
+
+  /* public RestIntegration(String odsUrl, String authToken) {
+        this.odsUrl = odsUrl;
+        this.authToken = authToken;
+    }
+
+    public RestIntegration(String odsUrl, String authToken, Integer connectTimeout, Integer readTimeout) {
+        this.odsUrl = odsUrl;
+        this.authToken = authToken;
+        this.connectTimeout = connectTimeout != null & connectTimeout > 0 ?connectTimeout*1000 : 60*1000;
+        this.readTimeout = readTimeout != null && readTimeout> 0 ? readTimeout*1000 : 60*1000;
+    }
+
+    public RestIntegration(String odsUrl, String authToken, String proxyHostName, int proxyPort, String proxyUserName, String proxyPassword) {
+        this.odsUrl = odsUrl;
+        this.authToken = authToken;
+        this.proxyHostName = proxyHostName;
+        this.proxyPort = proxyPort;
+        this.proxyUserName = proxyUserName;
+        this.proxyPassword = proxyPassword;
+
+    }
+
+    public RestIntegration(String odsUrl, String authToken, int connectTimeout, int readTimeout, String proxyHostName, int proxyPort, String proxyUserName, String proxyPassword) {
+        this.odsUrl = odsUrl;
+        this.authToken = authToken;
+        this.connectTimeout = connectTimeout;
+        this.readTimeout = readTimeout;
+        this.proxyHostName = proxyHostName;
+        this.proxyPort = proxyPort;
+        this.proxyUserName = proxyUserName;
+        this.proxyPassword = proxyPassword;
+    }
+
+
+   public static void main(String[] args) throws InterruptedException {
+        RestIntegration.validateArgs(args);
+
+        String authToken = args[0];
+        String invocationURL = args[1];
+        String proxyHostName = System.getProperty("proxyHostName");
+        String proxyPort = StringUtils.defaultString(System.getProperty("proxyPort"), "0");
+        String proxyUserName = System.getProperty("proxyUserName");
+        String proxyPassword = System.getProperty("proxyPassword");
+
+        Integer connectTimeout = 60;
+        Integer readTimeout = 60;
+
+        RestIntegration DiyOdsIntegration = new RestIntegration(invocationURL, authToken);
+        DiyOdsIntegration.setProxyHostName(proxyHostName);
+        DiyOdsIntegration.setProxyPort(Integer.parseInt(proxyPort));
+        DiyOdsIntegration.setProxyUserName(proxyUserName);
+        DiyOdsIntegration.setProxyPassword(proxyPassword);
+
+        RestIntegration DiyOdsIntegrationWithTimeouts = new RestIntegration(invocationURL, authToken, connectTimeout, readTimeout);
+        DiyOdsIntegrationWithTimeouts.setProxyHostName(proxyHostName);
+        DiyOdsIntegrationWithTimeouts.setProxyPort(Integer.parseInt(proxyPort));
+        DiyOdsIntegrationWithTimeouts.setProxyUserName(proxyUserName);
+        DiyOdsIntegrationWithTimeouts.setProxyPassword(proxyPassword);
+        Path path = Paths.get(args[2]);
+        //Path path = Paths.get("D:\\workspace\\configurations\\DIY\\ods-input.txt");
+        try {
+            byte[] data = Files.readAllBytes(path);
+            //DiyOdsIntegration.execute(data);
+            Thread.sleep(5000);
+            //DiyOdsIntegrationWithTimeouts.execute(data);
+            Thread.sleep(5000);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (SystemException e) {
+            e.printStackTrace();
+        }
+    }*/
+
+}
