@@ -23,9 +23,9 @@ public interface SeasonInterface {
 
     SeasonStatisticsDTO fetchPointsTable(SeasonDTO seasonDTO) throws  IPLStatException;
 
-    PlayerDTO orangeCapPlayer(SeasonDTO seasonDTO);
+    PlayerDTO orangeCapPlayer(SeasonDTO seasonDTO) throws IPLStatException;
 
-    PlayerDTO purpleCapPlayer(SeasonDTO seasonDTO);
+    PlayerDTO purpleCapPlayer(SeasonDTO seasonDTO)throws  IPLStatException;
 
 
 }
