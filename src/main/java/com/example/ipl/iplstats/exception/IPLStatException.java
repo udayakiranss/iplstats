@@ -18,4 +18,10 @@ public class IPLStatException extends  Exception {
        this.errorMessage = errorMessage;
     }
 
+    public IPLStatException(String errorCode, Throwable cause){
+        super(cause);
+        this.errorCode = errorCode;
+
+    }
+
 }

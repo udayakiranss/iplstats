@@ -24,6 +24,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
@@ -169,6 +170,25 @@ public class RestIntegration {
         return headers;
     }
 
+
+    public <R> R execute(String restURL,Class<R> responseType, int season ) throws  IPLStatException{
+        String url = String.format("http://localhost:5001/iplstats/season/%s", season);
+        R restResponse = null;
+        try {
+            restResponse = restTemplate.getForObject(url, responseType);
+            log.debug("response:" + restResponse);
+        } catch (RestClientException e) {
+            log.error("Exception", e);
+            throw new IPLStatException("1212",e);
+        }catch(Exception e) {
+            log.error("Exception", e);
+            throw new IPLStatException("1212",e);
+        }
+
+        return restResponse;
+    }
+
+
     public <I, R> R execute(String restURL, I input, String customAuthToken, Class<R> responseType) throws IPLStatException {
         log.error("customAuthToken : {}", customAuthToken);
         // TODO: validation
@@ -197,32 +217,32 @@ public class RestIntegration {
         }
     }
 
-    public <I, R> R executeRA(String restURL, I input, String authToken, Class<R> responseType) throws IPLStatException {
-        log.error("customAuthToken : {}", authToken);
-        // TODO: validation
-        // validate(odsUrl, customAuthToken, input);
-        log.debug("Validation successful");
-        HttpHeaders headers = generateRAHeaders(authToken);
-        log.debug("Headers generated");
-        try {
-            final HttpEntity<I> request = new HttpEntity<>(input, headers);
-            log.debug("Posting data to {}", restURL);
-            log.info("Request Data: \n" + objectMapper.writeValueAsString(input));
-            log.debug("Response from {}", restURL);
-            R restResponse = postForObject(restURL, request, responseType);
-            log.info("Response Data: \n" + objectMapper.writeValueAsString(restResponse));
-            return restResponse;
-        } catch (HttpServerErrorException e){
-            log.error("Exception", e);
-            if(e.getStatusCode().value() == 502){
-                throw new IPLStatException("ds", e);
-            }
-            throw new IPLStatException("231", e);
-        } catch(Exception e) {
-            log.error("Exception", e);
-            throw new IPLStatException("23e", e);
-        }
-    }
+//    public <I, R> R executeRA(String restURL, I input, String authToken, Class<R> responseType) throws IPLStatException {
+//        log.error("customAuthToken : {}", authToken);
+//        // TODO: validation
+//        // validate(odsUrl, customAuthToken, input);
+//        log.debug("Validation successful");
+//        HttpHeaders headers = generateRAHeaders(authToken);
+//        log.debug("Headers generated");
+//        try {
+//            final HttpEntity<I> request = new HttpEntity<>(input, headers);
+//            log.debug("Posting data to {}", restURL);
+//            log.info("Request Data: \n" + objectMapper.writeValueAsString(input));
+//            log.debug("Response from {}", restURL);
+//            R restResponse = postForObject(restURL, request, responseType);
+//            log.info("Response Data: \n" + objectMapper.writeValueAsString(restResponse));
+//            return restResponse;
+//        } catch (HttpServerErrorException e){
+//            log.error("Exception", e);
+//            if(e.getStatusCode().value() == 502){
+//                throw new IPLStatException("ds", e);
+//            }
+//            throw new IPLStatException("231", e);
+//        } catch(Exception e) {
+//            log.error("Exception", e);
+//            throw new IPLStatException("23e", e);
+//        }
+//    }
 
     private <R> R postForObject(String restURL, HttpEntity request, Class<R> responseType) {
         R restResponse = null;
