@@ -3,7 +3,9 @@ package com.example.ipl.iplstats.service;
 import com.example.ipl.iplstats.data.PlayerDTO;
 import com.example.ipl.iplstats.data.SeasonDTO;
 import com.example.ipl.iplstats.exception.IPLStatException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -13,6 +15,8 @@ import java.util.List;
 /**
  * Created by kiranuda on 8/13/2018.
  */
+@Slf4j
+@Component
 public class PythonPlayerInterfaceImpl implements PlayerInterface {
     @Override
     public List<PlayerDTO> getPlayerInfo(String playerName, int season) throws IPLStatException {

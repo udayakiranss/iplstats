@@ -4,6 +4,7 @@ import com.example.ipl.iplstats.data.PlayerDTO;
 import com.example.ipl.iplstats.data.SeasonDTO;
 import com.example.ipl.iplstats.exception.IPLStatException;
 import com.example.ipl.iplstats.service.PlayerInterface;
+import com.example.ipl.iplstats.service.SeasonInterface;
 import com.example.ipl.iplstats.service.SeasonInterfaceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -14,7 +15,7 @@ import java.util.List;
 public class PlayerDelegate {
 
     @Autowired
-    private SeasonInterfaceImpl seasonInterface;
+    private SeasonInterface seasonInterface;
     @Autowired
     private PlayerInterface playerInterface;
 

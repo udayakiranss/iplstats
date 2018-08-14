@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.*;
 
-@Component
 @Slf4j
 public class SeasonInterfaceImpl implements SeasonInterface {
 

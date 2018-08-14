@@ -10,20 +10,22 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by kiranuda on 8/10/2018.
  */
 @Slf4j
+@Component
 public class PythonSeasonInterfaceImpl implements SeasonInterface {
-    @Autowired
-    RestIntegration restIntegration;
+
 
 
     @Override
@@ -34,8 +36,14 @@ public class PythonSeasonInterfaceImpl implements SeasonInterface {
 
     @Override
     public List<SeasonDTO> getSeasons() throws IPLStatException {
+        List<SeasonDTO> seasonDTOList = new ArrayList<SeasonDTO>();
+        for(int i=2009; i<=2017;i++){
+            SeasonDTO seasonDTO = new SeasonDTO();
+            seasonDTO.setYear(i);
+            seasonDTOList.add(seasonDTO);
+        }
 
-        return null;
+        return seasonDTOList;
     }
 
     @Override
@@ -69,7 +77,7 @@ public class PythonSeasonInterfaceImpl implements SeasonInterface {
     @Override
     public SeasonStatisticsDTO fetchPointsTable(SeasonDTO seasonDTO) throws IPLStatException {
         String url = String.format("https://flask-api-py.herokuapp.com/iplstats/season/%s",seasonDTO.getYear());
-        String teamStatURL = String.format("http://localhost:5000/iplstats/season/%s/team/%s",seasonDTO.getYear());
+//        String teamStatURL = String.format("http://localhost:5000/iplstats/season/%s/team/%s",seasonDTO.getYear());
         RestTemplate template = new RestTemplate();
         try {
             ResponseEntity<SeasonStatisticsDTO> statisticsDTO = template.getForEntity(url,SeasonStatisticsDTO.class);

@@ -4,7 +4,7 @@ import com.example.ipl.iplstats.data.PlayerDTO;
 import com.example.ipl.iplstats.data.SeasonDTO;
 import com.example.ipl.iplstats.data.SeasonStatisticsDTO;
 import com.example.ipl.iplstats.exception.IPLStatException;
-import com.example.ipl.iplstats.service.SeasonInterfaceImpl;
+import com.example.ipl.iplstats.service.SeasonInterface;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +15,7 @@ import java.util.Map;
 public class SeasonDelegate {
 
     @Autowired
-    private SeasonInterfaceImpl seasonInterface;
+    private SeasonInterface seasonInterface;
 
 
     public void answerSeasonQuery(String season, String result, String statistics, List<String> answers,Map<SeasonDTO,
@@ -31,7 +31,7 @@ public class SeasonDelegate {
     }
 
     private void answerSeasonStatistics(SeasonDTO seasonDTO, String statistics,
-                                         SeasonStatisticsDTO pointsDTO,List<String> answers) {
+                                         SeasonStatisticsDTO pointsDTO,List<String> answers)throws IPLStatException {
         if( statistics !=null) {
             int year = seasonDTO.getYear();
             if(statistics.equals("Mom")){

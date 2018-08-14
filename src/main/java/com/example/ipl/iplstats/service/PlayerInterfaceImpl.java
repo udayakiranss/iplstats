@@ -22,7 +22,6 @@ import java.util.ListIterator;
 import java.util.Optional;
 
 @Slf4j
-@Component
 public class PlayerInterfaceImpl implements PlayerInterface {
 
     private  final PlayerMapper mapper = Mappers.getMapper(PlayerMapper.class);
