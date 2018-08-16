@@ -33,6 +33,7 @@ spring:
     show-sql: false
 
 seasonLoaded: "2017"
+pythonStatURL: "http://localhost:5000"
 
 logging:
   level:

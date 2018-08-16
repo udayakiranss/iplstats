@@ -17,6 +17,9 @@ public class ApplicationConfig {
     @Getter
     @Setter
     private String seasonLoaded;
+    @Getter
+    @Setter
+    private String pythonStatURL;
 
     public ApplicationConfig(){
         configValues = new HashMap<String, String>();

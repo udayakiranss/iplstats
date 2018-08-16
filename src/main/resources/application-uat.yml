@@ -33,7 +33,7 @@ spring:
     show-sql: false
 
 seasonLoaded: "2017"
-pythonStatURL: "http://localhost:5000"
+pythonStatURL: "http://iplguru-950053094.ap-south-1.elb.amazonaws.com"
 
 logging:
   level:
@@ -50,7 +50,7 @@ logging:
   pattern:
       console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
       file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
-  file: /Users/udaykiranss/Code/Logs/application.log
+  file: /Users/udaykiranss/Code/Logs/application-dev.log
 
 
 

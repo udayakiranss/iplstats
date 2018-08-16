@@ -1,9 +1,11 @@
 package com.example.ipl.iplstats.service;
 
+import com.example.ipl.iplstats.config.ApplicationConfig;
 import com.example.ipl.iplstats.data.PlayerDTO;
 import com.example.ipl.iplstats.data.SeasonDTO;
 import com.example.ipl.iplstats.exception.IPLStatException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
@@ -18,9 +20,13 @@ import java.util.List;
 @Slf4j
 @Component
 public class PythonPlayerInterfaceImpl implements PlayerInterface {
+
+    @Autowired
+    private ApplicationConfig applicationConfig;
+
     @Override
     public List<PlayerDTO> getPlayerInfo(String playerName, int season) throws IPLStatException {
-        String url = String.format("https://flask-api-py.herokuapp.com/iplstats/season/%s/player/%s",season,playerName);
+        String url = String.format(applicationConfig.getPythonStatURL()+"/iplstats/season/%s/player/%s",season,playerName);
         RestTemplate template = new RestTemplate();
         try {
             ResponseEntity<PlayerDTO> player = template.getForEntity(url,PlayerDTO.class);
@@ -34,7 +40,7 @@ public class PythonPlayerInterfaceImpl implements PlayerInterface {
 
     @Override
     public List<PlayerDTO> getPlayerInfo(String name) throws IPLStatException {
-        String url = String.format("https://flask-api-py.herokuapp.com/iplstats/player/%s",name);
+        String url = String.format(applicationConfig.getPythonStatURL()+"/iplstats/player/%s",name);
         RestTemplate template = new RestTemplate();
         try {
             ResponseEntity<PlayerDTO> player = template.getForEntity(url,PlayerDTO.class);

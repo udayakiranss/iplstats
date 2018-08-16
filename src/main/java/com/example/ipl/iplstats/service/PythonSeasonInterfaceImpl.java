@@ -1,5 +1,6 @@
 package com.example.ipl.iplstats.service;
 
+import com.example.ipl.iplstats.config.ApplicationConfig;
 import com.example.ipl.iplstats.data.PlayerDTO;
 import com.example.ipl.iplstats.data.SeasonDTO;
 import com.example.ipl.iplstats.data.SeasonStatisticsDTO;
@@ -25,8 +26,8 @@ import java.util.List;
 @Slf4j
 @Component
 public class PythonSeasonInterfaceImpl implements SeasonInterface {
-
-
+    @Autowired
+    private ApplicationConfig applicationConfig;
 
     @Override
     public SeasonDTO addSeason(SeasonDTO season) throws IPLStatException {
@@ -48,7 +49,8 @@ public class PythonSeasonInterfaceImpl implements SeasonInterface {
 
     @Override
     public SeasonDTO getSeason(int year) throws IPLStatException {
-        String url = String.format("https://flask-api-py.herokuapp.com/iplstats/season/%s",year);
+
+        String url = String.format(applicationConfig.getPythonStatURL()+"/iplstats/season/%s",year);
         RestTemplate template = new RestTemplate();
         SeasonDTO seasonDTO = null;
         try {
@@ -76,8 +78,8 @@ public class PythonSeasonInterfaceImpl implements SeasonInterface {
 
     @Override
     public SeasonStatisticsDTO fetchPointsTable(SeasonDTO seasonDTO) throws IPLStatException {
-        String url = String.format("https://flask-api-py.herokuapp.com/iplstats/season/%s",seasonDTO.getYear());
-//        String teamStatURL = String.format("http://localhost:5000/iplstats/season/%s/team/%s",seasonDTO.getYear());
+        String url = String.format(applicationConfig.getPythonStatURL()+"/iplstats/season/%s",
+                seasonDTO.getYear());
         RestTemplate template = new RestTemplate();
         try {
             ResponseEntity<SeasonStatisticsDTO> statisticsDTO = template.getForEntity(url,SeasonStatisticsDTO.class);
@@ -92,7 +94,8 @@ public class PythonSeasonInterfaceImpl implements SeasonInterface {
 
     @Override
     public PlayerDTO orangeCapPlayer(SeasonDTO seasonDTO)throws IPLStatException {
-        String url = String.format("https://flask-api-py.herokuapp.com/iplstats/season/%s/orangecap",seasonDTO.getYear());
+        String url = String.format(applicationConfig.getPythonStatURL()+"/iplstats/season/%s/orangecap",
+                seasonDTO.getYear());
         RestTemplate template = new RestTemplate();
         try {
             ResponseEntity<PlayerDTO> player = template.getForEntity(url,PlayerDTO.class);
@@ -104,7 +107,8 @@ public class PythonSeasonInterfaceImpl implements SeasonInterface {
 
     @Override
     public PlayerDTO purpleCapPlayer(SeasonDTO seasonDTO)throws IPLStatException {
-        String url = String.format("https://flask-api-py.herokuapp.com/iplstats/season/%s/purplecap",seasonDTO.getYear());
+        String url = String.format(applicationConfig.getPythonStatURL()+"/iplstats/season/%s/purplecap",
+                seasonDTO.getYear());
         RestTemplate template = new RestTemplate();
         try {
             ResponseEntity<PlayerDTO> player = template.getForEntity(url,PlayerDTO.class);
