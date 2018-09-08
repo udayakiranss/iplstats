@@ -33,7 +33,7 @@ spring:
     show-sql: false
 
 seasonLoaded: "2017"
-pythonStatURL: "http://localhost:5000"
+pythonStatURL: "https://flask-api-py.herokuapp.com"
 
 logging:
   level:
