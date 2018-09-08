@@ -32,7 +32,12 @@ public class ChatBotTelegramDelegate {
         Struct parameters = queryResult.getParameters();
 
         Map<String, Value> fieldsMap = parameters.getFieldsMap();
-        ListValue seasonValue = fieldsMap.get("Season").getListValue();
+        ListValue seasonValue = null;
+
+        if(fieldsMap.get("Season")!=null){
+            seasonValue = fieldsMap.get("Season").getListValue();
+        }
+
         Value statisticsValue = fieldsMap.get("Statistics");
         Value resultValue = fieldsMap.get("Result");
         Value categoryValue = fieldsMap.get("Category");
@@ -49,14 +54,14 @@ public class ChatBotTelegramDelegate {
                 && playerValue.getListValue().getValuesCount() > 0) {
             player = playerValue.getListValue().getValues(0).getStringValue();
         }
-        if (resultValue.getStringValue() != null && resultValue.getStringValue().length() > 0) {
+        if (resultValue!=null && resultValue.getStringValue() != null && resultValue.getStringValue().length() > 0) {
             result = resultValue.getStringValue();
         }
-        if (categoryValue.getListValue() != null && categoryValue.getListValue().getValuesCount() > 0) {
+        if (categoryValue!=null && categoryValue.getListValue() != null && categoryValue.getListValue().getValuesCount() > 0) {
             category = categoryValue.getListValue().getValues(0).getStringValue();
 
         }
-        if (statisticsValue.getStringValue() != null && statisticsValue.getStringValue().length() > 0) {
+        if (statisticsValue!=null && statisticsValue.getStringValue() != null && statisticsValue.getStringValue().length() > 0) {
             statistics = statisticsValue.getStringValue();
         }
         if (seasonValue != null && seasonValue.getValuesCount() > 0) {

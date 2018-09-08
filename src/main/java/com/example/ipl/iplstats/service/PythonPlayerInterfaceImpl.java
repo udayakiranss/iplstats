@@ -59,7 +59,13 @@ public class PythonPlayerInterfaceImpl implements PlayerInterface {
 
     @Override
     public PlayerDTO getPlayerStatistics(String playerName, Long seasonId) throws IPLStatException {
-        List<PlayerDTO> playerDTOs = getPlayerInfo(playerName,seasonId.intValue());
+        List<PlayerDTO> playerDTOs;
+        if(seasonId == null){
+            playerDTOs = getPlayerInfo(playerName);
+        }else{
+            playerDTOs = getPlayerInfo(playerName,seasonId.intValue());
+        }
+
         if(playerDTOs.size() > 0){
             return playerDTOs.get(0);
         }else{
