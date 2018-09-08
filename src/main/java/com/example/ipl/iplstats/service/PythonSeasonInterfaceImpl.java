@@ -38,7 +38,7 @@ public class PythonSeasonInterfaceImpl implements SeasonInterface {
     @Override
     public List<SeasonDTO> getSeasons() throws IPLStatException {
         List<SeasonDTO> seasonDTOList = new ArrayList<SeasonDTO>();
-        for(int i=2009; i<=2017;i++){
+        for(int i=2009; i<=2018;i++){
             SeasonDTO seasonDTO = new SeasonDTO();
             seasonDTO.setYear(i);
             seasonDTOList.add(seasonDTO);
